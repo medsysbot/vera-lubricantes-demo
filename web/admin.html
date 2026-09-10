@@ -3,12 +3,266 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#02060b">
-  <title>VERA Lubricantes | Administración</title>
+  <meta name="theme-color" content="#020812">
+  <title>VERA Lubricantes | Administrador</title>
   <link rel="stylesheet" href="/css/global.css">
-  <script src="/js/app.js" defer></script>
 </head>
-<body>
-  <main id="admin-app" class="app-shell" aria-live="polite"></main>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a class="vera-brand" href="#" aria-label="VERA Lubricantes">
+        <span class="vera-mark" aria-hidden="true"></span>
+        <span class="vera-wordmark"><strong>VERA</strong><span>LUBRICANTES</span></span>
+      </a>
+
+      <nav class="admin-nav" aria-label="Navegación administrador">
+        <button class="active" type="button" data-admin-go="dashboard">Resumen</button>
+        <button type="button" data-admin-go="clients">Clientes</button>
+        <button type="button" data-admin-go="vehicles">Vehículos</button>
+        <button type="button" data-admin-go="services">Servicios</button>
+        <button type="button" data-admin-go="promotions">Promociones</button>
+        <button type="button" data-admin-go="messages">Mensajes</button>
+        <button type="button" data-admin-go="reminders">Recordatorios</button>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        Panel administrativo VERA<br>
+        Acceso exclusivo autorizado
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1>Panel <span class="gold">Administrativo</span></h1>
+        <span class="muted">VERA Lubricantes</span>
+      </header>
+
+      <section class="admin-view active" data-admin-view="dashboard">
+        <div class="quick-actions">
+          <button class="quick-action" type="button" data-admin-go="clients">
+            <strong>Nuevo cliente</strong>
+            <span>Registrar cliente, vehículo y acceso VERA</span>
+          </button>
+          <button class="quick-action" type="button" data-admin-go="services">
+            <strong>Nuevo servicio</strong>
+            <span>Buscar por patente o cliente y precargar datos</span>
+          </button>
+          <button class="quick-action" type="button" data-admin-go="promotions">
+            <strong>Publicar promoción</strong>
+            <span>Crear, segmentar y publicar</span>
+          </button>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi-card vera-card"><strong>128</strong><p>Vehículos registrados</p><span class="muted">Datos de presentación</span></article>
+          <article class="kpi-card vera-card"><strong>56</strong><p>Servicios del mes</p><span class="muted">Datos de presentación</span></article>
+          <article class="kpi-card vera-card"><strong>18</strong><p>Recordatorios próximos</p><span class="muted">Datos de presentación</span></article>
+          <article class="kpi-card vera-card"><strong>3</strong><p>Promociones publicadas</p><span class="muted">Datos de presentación</span></article>
+        </div>
+
+        <div class="admin-columns">
+          <article class="admin-panel vera-card">
+            <h3>Actividad reciente</h3>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead><tr><th>FECHA</th><th>TIPO</th><th>DESCRIPCIÓN</th><th>REFERENCIA</th></tr></thead>
+                <tbody>
+                  <tr><td>15/06 11:23</td><td>Servicio</td><td>Nuevo servicio registrado</td><td>ABC 123</td></tr>
+                  <tr><td>15/06 10:47</td><td>Vehículo</td><td>Vehículo registrado</td><td>XYZ 789</td></tr>
+                  <tr><td>14/06 17:32</td><td>Promoción</td><td>Promoción publicada</td><td>Aceite 20W50</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="admin-panel vera-card">
+            <h3>Próximos avisos automáticos</h3>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead><tr><th>VEHÍCULO</th><th>PRÓXIMO CAMBIO</th><th>ÚLTIMO SERVICIO</th></tr></thead>
+                <tbody>
+                  <tr><td>ABC 123</td><td>25/06</td><td>25/12/2023</td></tr>
+                  <tr><td>XYZ 789</td><td>25/06</td><td>25/12/2023</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-view" data-admin-view="clients">
+        <div class="view-heading">
+          <div><h2>Clientes</h2><p>Alta, consulta, vehículos y acceso VERA.</p></div>
+          <button class="vera-button primary" type="button" data-toggle-panel="new-client-panel">Nuevo cliente</button>
+        </div>
+
+        <div class="search-line">
+          <input class="vera-input" type="search" placeholder="Buscar cliente por nombre..." aria-label="Buscar cliente">
+          <button class="vera-button" type="button">Buscar</button>
+        </div>
+
+        <section class="admin-panel vera-card hidden" id="new-client-panel">
+          <h3>Crear nuevo cliente</h3>
+          <div class="admin-form-grid">
+            <div class="field"><label>Nombre y apellido</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Teléfono</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Vehículo</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Patente</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Año</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Kilometraje registrado</label><input class="vera-input" type="text"></div>
+          </div>
+          <div class="form-actions"><button class="vera-button primary" type="button">Guardar cliente</button></div>
+        </section>
+
+        <div class="client-record-grid" style="margin-top:16px;">
+          <article class="record-card vera-card">
+            <h3>Juan Pérez</h3>
+            <p class="muted">(02392) 315890</p>
+            <p><strong>ABC 123</strong> · Sedán premium 2.0 Turbo</p>
+            <div class="record-actions">
+              <button class="vera-button" type="button">Ver cliente</button>
+              <button class="vera-button" type="button">Agregar vehículo</button>
+              <button class="vera-button" type="button">Restablecer PIN</button>
+              <button class="vera-button" type="button">Revincular VERA</button>
+              <button class="vera-button danger" type="button">Eliminar cliente</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-view" data-admin-view="vehicles">
+        <div class="view-heading"><div><h2>Vehículos</h2><p>Localización por patente o mediante el cliente.</p></div></div>
+        <div class="search-line">
+          <input class="vera-input" type="search" placeholder="Buscar por patente o cliente..." aria-label="Buscar vehículo">
+          <button class="vera-button" type="button">Buscar</button>
+        </div>
+        <article class="admin-panel vera-card">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>PATENTE</th><th>VEHÍCULO</th><th>CLIENTE</th><th>KILOMETRAJE</th><th>ACCIÓN</th></tr></thead>
+              <tbody><tr><td>ABC 123</td><td>Sedán premium 2.0 Turbo</td><td>Juan Pérez</td><td>45.620 km</td><td><button class="text-action" type="button" data-admin-go="services">Nuevo servicio</button></td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-view" data-admin-view="services">
+        <div class="view-heading"><div><h2>Nuevo servicio <span class="gold">precargado</span></h2><p>Buscar vehículo, recuperar información existente y completar únicamente el nuevo servicio.</p></div></div>
+
+        <div class="search-line">
+          <input class="vera-input" type="search" placeholder="Patente o cliente..." aria-label="Buscar cliente o patente">
+          <button class="vera-button" type="button">Buscar</button>
+        </div>
+
+        <div class="preloaded-info vera-card">
+          <div><small>Cliente</small><strong>Juan Pérez</strong></div>
+          <div><small>Teléfono</small><strong>(02392) 315890</strong></div>
+          <div><small>Vehículo</small><strong>Sedán premium 2.0 Turbo</strong></div>
+          <div><small>Patente</small><strong>ABC 123</strong></div>
+          <div><small>Último aceite</small><strong>5W30 Full Sintético</strong></div>
+          <div><small>Último cambio</small><strong>15/05/2024 · 45.620 km</strong></div>
+          <div><small>Próximo recomendado</small><strong>55.000 km</strong></div>
+          <div><small>Estado</small><strong class="gold">Datos precargados</strong></div>
+        </div>
+
+        <article class="admin-panel vera-card">
+          <h3>Datos del servicio</h3>
+          <div class="admin-form-grid">
+            <div class="field"><label>Fecha</label><input class="vera-input" type="text" value="15/06/2024"></div>
+            <div class="field"><label>Kilómetros</label><input class="vera-input" type="text" value="46.200 km"></div>
+            <div class="field"><label>Próximo cambio km</label><input class="vera-input" type="text" value="56.200 km"></div>
+            <div class="field"><label>Aceite</label><input class="vera-input" type="text" value="5W30 Full Sintético"></div>
+            <div class="field"><label>Tipo</label><input class="vera-input" type="text" value="Sintético"></div>
+            <div class="field"><label>Filtro de aceite</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Filtro de combustible</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Filtro de aire</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Filtro de cabina</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Bujías</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Aceite caja de vel.</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Aceite diferencial</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Engrase</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Líquido hidráulico</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Líquido refrigerante</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Líquido de freno</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Control de neumáticos</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Rotación de neumáticos</label><input class="vera-input" type="text"></div>
+            <div class="field"><label>Batería</label><input class="vera-input" type="text"></div>
+            <div class="field wide"><label>Observaciones</label><textarea class="vera-textarea"></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button class="vera-button" type="button">Ver historial</button>
+            <button class="vera-button" type="button">Corrección</button>
+            <button class="vera-button primary" type="button">Guardar servicio</button>
+          </div>
+          <p class="audit-note">Los campos admiten el texto o valor que Víctor considere correspondiente. Las correcciones posteriores quedan sujetas a trazabilidad administrativa.</p>
+        </article>
+      </section>
+
+      <section class="admin-view" data-admin-view="promotions">
+        <div class="view-heading"><div><h2>Publicar <span class="gold">promoción</span></h2><p>Crear, detectar coincidencias y publicar. Sin borradores.</p></div></div>
+
+        <div class="promo-layout">
+          <article class="admin-panel vera-card">
+            <h3>Detalles de la promoción</h3>
+            <div class="field"><label>Producto / criterio</label><input class="vera-input" id="promo-criteria" type="text" value="Aceite 20W50"></div>
+            <div class="field" style="margin-top:13px;"><label>Título</label><input class="vera-input" type="text" value="Promoción aceite 20W50"></div>
+            <div class="field" style="margin-top:13px;"><label>Detalle</label><textarea class="vera-textarea">Promoción disponible para clientes con vehículos coincidentes.</textarea></div>
+            <div class="form-actions"><button class="vera-button primary" type="button">Publicar promoción</button></div>
+          </article>
+
+          <article class="admin-panel vera-card">
+            <h3>Audiencia automática</h3>
+            <p class="muted">VERA busca coincidencias en datos reales de vehículos y servicios, identifica propietarios y elimina clientes duplicados.</p>
+            <div class="promo-match"><strong>173</strong><div>clientes únicos coincidentes</div></div>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead><tr><th>CLIENTE</th><th>VEHÍCULO COINCIDENTE</th><th>PATENTE</th><th>CRITERIO</th></tr></thead>
+                <tbody>
+                  <tr><td>Juan Pérez</td><td>Sedán premium 2.0 Turbo</td><td>ABC 123</td><td>20W50</td></tr>
+                  <tr><td>Laura Sánchez</td><td>Corsa</td><td>AC 456 EF</td><td>20W50</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <article class="admin-panel vera-card" style="margin-top:16px;">
+          <h3>Promociones publicadas</h3>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>FECHA</th><th>PROMOCIÓN</th><th>CRITERIO</th><th>DESTINATARIOS</th></tr></thead>
+              <tbody><tr><td>14/06/2024</td><td>Promoción aceite 20W50</td><td>Aceite 20W50</td><td>173 clientes</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-view" data-admin-view="messages">
+        <div class="view-heading"><div><h2>Mensajes</h2><p>Comunicaciones internas de VERA para los clientes.</p></div></div>
+        <article class="admin-panel vera-card">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>FECHA</th><th>CLIENTE</th><th>TIPO</th><th>MENSAJE</th></tr></thead>
+              <tbody><tr><td>15/06/2024</td><td>Juan Pérez</td><td>Promoción</td><td>Promoción aceite 20W50</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-view" data-admin-view="reminders">
+        <div class="view-heading"><div><h2>Recordatorios</h2><p>Avisos programados a partir del último servicio registrado.</p></div></div>
+        <article class="admin-panel vera-card">
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>CLIENTE</th><th>VEHÍCULO</th><th>ÚLTIMO SERVICIO</th><th>PRÓXIMO AVISO</th><th>ESTADO</th></tr></thead>
+              <tbody><tr><td>Juan Pérez</td><td>ABC 123</td><td>15/05/2024</td><td>Pendiente de regla definitiva</td><td class="gold">Programación por definir</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/admin.js"></script>
 </body>
 </html>

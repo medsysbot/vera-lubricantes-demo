@@ -3,12 +3,240 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#02060b">
+  <meta name="theme-color" content="#020812">
   <title>VERA Lubricantes</title>
   <link rel="stylesheet" href="/css/global.css">
-  <script src="/js/app.js" defer></script>
 </head>
-<body>
-  <main id="app" class="app-shell" aria-live="polite"></main>
+<body class="client-body">
+  <main class="client-app" aria-label="VERA Lubricantes - Cliente">
+    <section class="client-view pin-view active" data-client-view="pin">
+      <a class="vera-brand" href="#" aria-label="VERA Lubricantes">
+        <span class="vera-mark" aria-hidden="true"></span>
+        <span class="vera-wordmark"><strong>VERA</strong><span>LUBRICANTES</span></span>
+      </a>
+
+      <div class="pin-card vera-card">
+        <p class="eyebrow">Acceso personal</p>
+        <h1 class="display-title">Ingresá tu <span class="gold">PIN</span></h1>
+        <p class="muted">Usá el PIN de 4 dígitos configurado al vincular VERA en este teléfono.</p>
+
+        <div class="pin-row" aria-label="PIN de cuatro dígitos">
+          <input class="pin-digit" inputmode="numeric" maxlength="1" aria-label="Dígito 1">
+          <input class="pin-digit" inputmode="numeric" maxlength="1" aria-label="Dígito 2">
+          <input class="pin-digit" inputmode="numeric" maxlength="1" aria-label="Dígito 3">
+          <input class="pin-digit" inputmode="numeric" maxlength="1" aria-label="Dígito 4">
+        </div>
+
+        <div class="pin-actions">
+          <button class="vera-button primary" type="button" data-client-go="vehicles">Ingresar</button>
+          <button class="text-action" type="button" id="show-pin-help">Olvidé mi PIN</button>
+        </div>
+
+        <p id="pin-help" class="audit-note hidden">Para restablecer el PIN, Víctor genera desde tu ficha un QR temporal. El PIN anterior queda invalidado y configurás uno nuevo.</p>
+      </div>
+    </section>
+
+    <section class="client-view" data-client-view="vehicles">
+      <header class="client-header">
+        <a class="vera-brand" href="#" aria-label="VERA Lubricantes">
+          <span class="vera-mark" aria-hidden="true"></span>
+          <span class="vera-wordmark"><strong>VERA</strong><span>LUBRICANTES</span></span>
+        </a>
+        <button class="icon-button" type="button" data-client-go="messages" aria-label="Mensajes">✦</button>
+      </header>
+
+      <p class="eyebrow">Tu cuenta</p>
+      <h1 class="display-title">Mis <span class="gold">vehículos</span></h1>
+      <p class="muted">Elegí el vehículo que querés consultar.</p>
+
+      <div class="vehicle-grid">
+        <button class="vehicle-choice" type="button" data-client-go="vehicle">
+          <span class="vehicle-choice-art" aria-hidden="true"></span>
+          <span>
+            <strong>ABC 123</strong>
+            <small>Sedán premium 2.0 Turbo</small>
+          </span>
+          <span class="gold" aria-hidden="true">›</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="client-view" data-client-view="vehicle">
+      <header class="client-header">
+        <a class="vera-brand" href="#" aria-label="VERA Lubricantes">
+          <span class="vera-mark" aria-hidden="true"></span>
+          <span class="vera-wordmark"><strong>VERA</strong><span>LUBRICANTES</span></span>
+        </a>
+        <button class="icon-button" type="button" data-client-go="messages" aria-label="Mensajes">2</button>
+      </header>
+
+      <h1 class="display-title">Mi <span class="gold">vehículo</span></h1>
+
+      <article class="vehicle-hero vera-card">
+        <div class="vehicle-hero-art" aria-label="Imagen del vehículo"></div>
+        <div class="vehicle-identity">
+          <div><strong>ABC 123</strong><small>Patente</small></div>
+          <div><strong>2022</strong><small>Año</small></div>
+          <div><strong>45.620 km</strong><small>Kilometraje registrado</small></div>
+        </div>
+      </article>
+
+      <div class="vehicle-status-grid">
+        <article class="status-card vera-card">
+          <h3>Último cambio</h3>
+          <strong>15/05/2024</strong>
+          <span class="muted">45.620 km</span>
+        </article>
+        <article class="status-card vera-card">
+          <h3>Próximo cambio</h3>
+          <strong>55.000 km</strong>
+          <span class="muted">15/11/2024 recomendado</span>
+        </article>
+      </div>
+
+      <article class="personal-card vera-card">
+        <h3>Datos personales</h3>
+        <strong>Juan Pérez</strong>
+        <p>(02392) 315890</p>
+      </article>
+
+      <div class="client-actions">
+        <button class="vera-button primary" type="button" data-client-go="history">Ver historial completo</button>
+        <button class="vera-button" type="button" data-client-go="detail">Último servicio</button>
+      </div>
+
+      <button class="message-teaser vera-card" type="button" data-client-go="messages" style="width:100%; text-align:left; color:inherit;">
+        <h3>Mensajes y promociones</h3>
+        <strong>Tenés mensajes nuevos</strong>
+      </button>
+    </section>
+
+    <section class="client-view" data-client-view="history">
+      <header class="client-header compact">
+        <button class="icon-button" type="button" data-client-go="vehicle" aria-label="Volver">←</button>
+        <h1 class="display-title" style="font-size:38px;">Historial</h1>
+        <span style="width:42px;"></span>
+      </header>
+
+      <article class="history-vehicle-card vera-card">
+        <div class="history-vehicle-copy">
+          <span class="eyebrow">Mi vehículo</span>
+          <strong>ABC 123</strong>
+          <span class="muted">Sedán premium 2.0 Turbo</span>
+        </div>
+        <div class="history-car-art" aria-label="Vehículo"></div>
+      </article>
+
+      <div class="filter-row" aria-label="Filtros de historial">
+        <button class="filter-chip active" type="button">Todos</button>
+        <button class="filter-chip" type="button">Cambios de aceite</button>
+        <button class="filter-chip" type="button">Filtros</button>
+        <button class="filter-chip" type="button">Controles</button>
+      </div>
+
+      <div class="timeline">
+        <article class="timeline-card vera-card">
+          <div class="timeline-top"><strong>15/05/2024</strong><button class="text-action" type="button" data-client-go="detail">Ver detalle ›</button></div>
+          <p>45.620 km</p>
+          <p>Aceite: VERA Sintético 5W-40</p>
+          <p>Próximo cambio: 15/11/2024 o 55.000 km</p>
+        </article>
+        <article class="timeline-card vera-card">
+          <div class="timeline-top"><strong>15/11/2023</strong><button class="text-action" type="button" data-client-go="detail">Ver detalle ›</button></div>
+          <p>40.150 km</p>
+          <p>Aceite: VERA Sintético 5W-40</p>
+          <p>Próximo cambio: 15/05/2024 o 50.000 km</p>
+        </article>
+        <article class="timeline-card vera-card">
+          <div class="timeline-top"><strong>15/05/2023</strong><button class="text-action" type="button" data-client-go="detail">Ver detalle ›</button></div>
+          <p>35.200 km</p>
+          <p>Aceite: VERA Sintético 5W-40</p>
+          <p>Próximo cambio: 15/11/2023 o 45.000 km</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="client-view" data-client-view="detail">
+      <header class="client-header compact">
+        <button class="icon-button" type="button" data-client-go="history" aria-label="Volver">←</button>
+        <h1 class="display-title" style="font-size:34px;">Último <span class="gold">servicio</span></h1>
+        <span style="width:42px;"></span>
+      </header>
+
+      <article class="detail-summary vera-card">
+        <div><span class="eyebrow">Vehículo</span><strong>ABC 123</strong></div>
+        <div><span class="eyebrow">Cliente</span><strong>Juan Pérez</strong></div>
+        <div><span class="eyebrow">Fecha del servicio</span><strong>15/05/2024</strong></div>
+        <div><span class="eyebrow">Kilómetros al servicio</span><strong>45.620 km</strong></div>
+      </article>
+
+      <article class="detail-list vera-card">
+        <div class="detail-row"><span>Aceite</span><span>5W30 Full Sintético</span></div>
+        <div class="detail-row"><span>Tipo</span><span>Sintético</span></div>
+        <div class="detail-row"><span>Filtro de aceite</span><span>MANN-FILTER HU 711/51 x</span></div>
+        <div class="detail-row"><span>Filtro de combustible</span><span>MANN-FILTER WK 820/21</span></div>
+        <div class="detail-row"><span>Filtro de aire</span><span>MANN-FILTER C 26 004</span></div>
+        <div class="detail-row"><span>Filtro de cabina</span><span>MANN-FILTER CUK 26 004</span></div>
+        <div class="detail-row"><span>Bujías</span><span>NGK Iridium ILZKR7B11S</span></div>
+        <div class="detail-row"><span>Aceite caja de vel.</span><span>75W-90 Sintético</span></div>
+        <div class="detail-row"><span>Aceite diferencial</span><span>75W-140 Sintético</span></div>
+        <div class="detail-row"><span>Engrase</span><span>Completado</span></div>
+        <div class="detail-row"><span>Líquido hidráulico</span><span>ISO 46</span></div>
+        <div class="detail-row"><span>Líquido refrigerante</span><span>G12+</span></div>
+        <div class="detail-row"><span>Líquido de freno</span><span>DOT 4</span></div>
+        <div class="detail-row"><span>Control de neumáticos</span><span>OK</span></div>
+        <div class="detail-row"><span>Rotación de neumáticos</span><span>Delantera a trasera</span></div>
+        <div class="detail-row"><span>Batería</span><span>OK - 12.6V</span></div>
+      </article>
+    </section>
+
+    <section class="client-view" data-client-view="messages">
+      <header class="client-header">
+        <a class="vera-brand" href="#" aria-label="VERA Lubricantes">
+          <span class="vera-mark" aria-hidden="true"></span>
+          <span class="vera-wordmark"><strong>VERA</strong><span>LUBRICANTES</span></span>
+        </a>
+        <span class="icon-button" aria-label="Mensajes sin leer">3</span>
+      </header>
+
+      <h1 class="display-title">Mensajes <span class="gold">y promociones</span></h1>
+      <p class="muted">Promociones, recordatorios y novedades de VERA para tu cuenta.</p>
+
+      <div class="message-toolbar">
+        <input class="vera-input" type="search" placeholder="Buscar mensajes..." aria-label="Buscar mensajes">
+        <button class="vera-button" type="button">Filtros</button>
+      </div>
+
+      <div class="message-list">
+        <article class="message-card vera-card unread">
+          <span class="message-icon">◈</span>
+          <div>
+            <span class="message-tag">Promoción</span>
+            <h3>Promoción aceite 20W50</h3>
+            <p>Tu vehículo coincide con esta promoción disponible en VERA.</p>
+          </div>
+          <span class="gold">›</span>
+        </article>
+
+        <article class="message-card vera-card unread">
+          <span class="message-icon">◷</span>
+          <div>
+            <span class="message-tag">Recordatorio</span>
+            <h3>Próximo cambio por tiempo</h3>
+            <p>Tenés un próximo mantenimiento registrado para tu vehículo.</p>
+          </div>
+          <span class="gold">›</span>
+        </article>
+      </div>
+    </section>
+
+    <nav class="client-bottom-nav hidden" id="client-bottom-nav" aria-label="Navegación cliente">
+      <button type="button" data-client-go="vehicles">Vehículos</button>
+      <button type="button" data-client-go="vehicle">Mi vehículo</button>
+      <button type="button" data-client-go="messages">Mensajes</button>
+    </nav>
+  </main>
+
+  <script src="/js/client.js"></script>
 </body>
 </html>
