@@ -1,0 +1,52 @@
+:root {
+  color-scheme: dark;
+  --vera-bg: #02060b;
+  --vera-surface: #081522;
+  --vera-surface-strong: #0d1b29;
+  --vera-border: #24384a;
+  --vera-gold: #d8a34f;
+  --vera-gold-soft: #f0c777;
+  --vera-text: #f7f5ef;
+  --vera-muted: #a4b0bc;
+  --vera-danger: #ff3348;
+  --vera-success: #27c384;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--vera-bg);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--vera-bg);
+  color: var(--vera-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
