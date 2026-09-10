@@ -15,7 +15,7 @@ function showClientView(name) {
     button.classList.toggle('active', button.dataset.clientGo === name);
   });
 
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 document.addEventListener('click', (event) => {
