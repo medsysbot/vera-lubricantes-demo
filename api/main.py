@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from api.config import Settings
+from api.db import database_health
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = BASE_DIR / "web"
@@ -15,7 +20,16 @@ app.mount("/js", StaticFiles(directory=WEB_DIR / "js"), name="js")
 
 @app.get("/health", include_in_schema=False)
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    try:
+        settings = Settings.from_env()
+        database_health(settings)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Servicio no disponible",
+        ) from exc
+
+    return {"status": "ok", "database": "ok"}
 
 
 @app.get("/", include_in_schema=False)
