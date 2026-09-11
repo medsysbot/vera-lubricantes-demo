@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from api.auth import CLIENT_COOKIE, DEVICE_COOKIE, ClientContext, cookie_options, require_client, utcnow
 from api.config import settings
 from api.db import connection
-from api.models import ClientLogin, PushSubscriptionInput
+from api.models import ClientLogin, MessageInput, MessageSelection, PushSubscriptionInput
 from api.push import push_is_configured
 from api.security import hash_token, random_token, verify_pin
 
@@ -96,7 +96,7 @@ def me(client: ClientContext = Depends(require_client)):
             (client.id,),
         ).fetchall()
         unread = conn.execute(
-            "select count(*) as n from vera.messages where client_id=%s and is_read=false and client_deleted_at is null",
+            "select count(*) as n from vera.messages where client_id=%s and sender_role='admin' and is_read=false and client_deleted_at is null",
             (client.id,),
         ).fetchone()["n"]
     return {"id": client.id, "full_name": client.full_name, "phone": client.phone, "vehicles": vehicles, "unread_messages": unread}
@@ -136,17 +136,46 @@ def messages(client: ClientContext = Depends(require_client)):
     with connection() as conn:
         rows = conn.execute(
             """
-            select m.id, m.message_type, m.title, m.body, m.is_read, m.created_at,
+            select m.id, m.sender_role, m.message_type, m.title, m.body, m.is_read, m.created_at,
                    m.read_at, m.vehicle_id, p.criterion_value as promotion_item
             from vera.messages m
             left join vera.promotions p on p.id=m.promotion_id
             where m.client_id=%s and m.client_deleted_at is null
-            order by m.created_at desc
+            order by m.created_at desc, m.id desc
             limit 200
             """,
             (client.id,),
         ).fetchall()
     return rows
+
+
+@router.post("/messages", status_code=201)
+def send_client_message(payload: MessageInput, client: ClientContext = Depends(require_client)):
+    with connection() as conn:
+        row = conn.execute(
+            """
+            insert into vera.messages (client_id, message_type, title, body, sender_role)
+            values (%s, 'message', %s, %s, 'client')
+            returning id, created_at
+            """,
+            (client.id, payload.title, payload.body),
+        ).fetchone()
+    return row
+
+
+@router.delete("/messages")
+def delete_client_messages(payload: MessageSelection, client: ClientContext = Depends(require_client)):
+    ids = list(dict.fromkeys(payload.ids))
+    with connection() as conn:
+        rows = conn.execute(
+            """
+            update vera.messages set client_deleted_at=now()
+            where id=any(%s) and client_id=%s and client_deleted_at is null
+            returning id
+            """,
+            (ids, client.id),
+        ).fetchall()
+    return {"deleted": len(rows), "ids": [row["id"] for row in rows]}
 
 
 @router.post("/messages/{message_id}/read")
@@ -156,14 +185,14 @@ def read_message(message_id: UUID, client: ClientContext = Depends(require_clien
             """
             update vera.messages
             set is_read=true, read_at=coalesce(read_at,now())
-            where id=%s and client_id=%s and client_deleted_at is null
-            returning id
+            where id=%s and client_id=%s and sender_role='admin' and client_deleted_at is null
+            returning id, read_at
             """,
             (message_id, client.id),
         ).fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Mensaje no encontrado")
-    return {"ok": True}
+    return {"ok": True, "read_at": row["read_at"]}
 
 
 @router.delete("/messages/{message_id}")
@@ -172,9 +201,7 @@ def delete_message(message_id: UUID, client: ClientContext = Depends(require_cli
         row = conn.execute(
             """
             update vera.messages
-            set client_deleted_at=coalesce(client_deleted_at,now()),
-                is_read=true,
-                read_at=coalesce(read_at,now())
+            set client_deleted_at=coalesce(client_deleted_at,now())
             where id=%s and client_id=%s and client_deleted_at is null
             returning id
             """,

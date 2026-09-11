@@ -8,6 +8,7 @@
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/admin-refresh.css?v=20260911-workshop">
+  <link rel="stylesheet" href="/css/messages.css?v=20260911-bidirectional">
 </head>
 <body class="admin-body">
   <section class="admin-login" id="admin-login">
@@ -176,7 +177,21 @@
       </section>
 
       <section class="admin-view" data-admin-view="messages">
-        <div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1><p class="admin-subtitle">Seguimiento limpio de las comunicaciones que VERA ya registra.</p></div></div>
+        <div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1></div></div>
+        <form class="glass-card form-panel message-composer" id="admin-message-form">
+          <h2><span data-fa="comments"></span> Enviar mensaje</h2>
+          <label>Destinatario<select class="text-input" name="audience_scope" id="message-audience"><option value="client">Un cliente</option><option value="all">Todos los clientes</option></select></label>
+          <div id="message-recipient-fields">
+            <div class="message-recipient-search"><label>Buscar cliente<input class="text-input" id="message-recipient-search" placeholder="Nombre, teléfono o patente"></label><button class="btn" id="search-message-client" type="button"><span data-fa="magnifying-glass"></span> Buscar</button></div>
+            <label>Cliente<select class="text-input" id="message-recipient" name="client_id" required><option value="">Seleccioná un cliente</option></select></label>
+          </div>
+          <label>Asunto<input class="text-input" name="title" maxlength="220" required></label>
+          <label>Mensaje<textarea class="text-input" name="body" rows="4" maxlength="3000" required></textarea></label>
+          <p class="error-text" id="admin-message-error" role="alert"></p>
+          <div class="form-actions"><button class="btn primary" id="send-admin-message" type="submit"><span data-fa="comments"></span> Enviar</button></div>
+        </form>
+        <div class="message-history-heading"><h2>Historial de mensajes</h2><button class="btn" id="refresh-admin-messages" type="button"><span data-fa="rotate"></span> Actualizar</button></div>
+        <div class="message-selection-bar"><span id="admin-message-selection-count" aria-live="polite">0 mensajes seleccionados</span><button class="btn danger" id="delete-admin-messages" type="button" disabled><span data-fa="trash-can"></span> Eliminar</button></div>
         <div class="admin-message-list" id="admin-messages"></div>
       </section>
 
@@ -192,6 +207,6 @@
 
   <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button">Copiar enlace</button></dialog>
   <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit">Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
-  <script src="/js/admin.js?v=20260911-unread-messages" defer></script>
+  <script src="/js/admin.js?v=20260911-bidirectional" defer></script>
 </body>
 </html>

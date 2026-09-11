@@ -28,6 +28,7 @@
     .client-empty{padding:26px 20px;text-align:center}.client-empty .fa-svg{display:block;margin:0 auto 12px;color:var(--gold2);font-size:1.4rem}.client-empty p{margin:0;color:#9ba7b3}.back-link{border:0;background:transparent;cursor:pointer}.activation-shell{width:min(100% - 30px,520px);min-height:100dvh;margin:auto;display:grid;align-content:center;gap:24px}.activation-card form{display:grid;gap:14px;margin-top:18px}
     @media(max-width:420px){.client-view{padding-left:16px;padding-right:16px}.client-header{margin-left:-16px;margin-right:-16px;padding-left:18px;padding-right:18px}.client-header .brand-lockup.compact .brand-mark{width:42px;height:52px;font-size:44px}.client-header .brand-lockup.compact strong{font-size:1.55rem}.vehicle-card{grid-template-columns:56px minmax(0,1fr) 24px;padding:17px 15px;gap:13px}.vehicle-card-icon{width:56px;height:56px}.vehicle-card-copy strong{font-size:1.5rem}.client-utility-card{grid-template-columns:48px 1fr}.utility-icon{width:48px;height:48px}.client-utility-card .btn{grid-column:1/-1;width:100%}.vehicle-overview-top{min-height:195px;padding:20px}.vehicle-emblem{width:92px;height:92px;font-size:2.5rem}.vehicle-identity h2{font-size:2.2rem}.vehicle-meta-premium{grid-template-columns:1fr}.vehicle-meta-premium div{display:grid;grid-template-columns:28px 1fr auto;align-items:center;text-align:left;border-right:0;border-bottom:1px solid rgba(117,145,169,.13);padding:13px 16px}.vehicle-meta-premium div:last-child{border-bottom:0}.vehicle-meta-premium .meta-icon{margin:0}.vehicle-meta-premium small{margin:0}.status-grid{grid-template-columns:1fr}.timeline-main{grid-template-columns:1fr 1fr}.timeline-main .link-button{grid-column:1/-1;justify-self:end}.detail-row{grid-template-columns:30px 1fr 24px}.detail-row strong{grid-column:2/3;text-align:left;margin-top:3px}.detail-row .check{grid-column:3;grid-row:1/3}.message-card{grid-template-columns:52px minmax(0,1fr) 18px;padding:16px 14px}.message-icon{width:50px;height:50px}.message-card .promotion-item,.message-card .promotion-title{font-size:1rem}.message-detail-card{grid-template-columns:52px minmax(0,1fr);padding:18px 15px}.message-detail-card .promotion-item{font-size:1.16rem}.message-detail-card .promotion-title{font-size:1.24rem}.message-detail-card .promotion-detail{font-size:.94rem}.client-section-head h1{font-size:2.8rem}}
   </style>
+  <link rel="stylesheet" href="/css/messages.css?v=20260911-bidirectional">
 </head>
 <body class="client-body">
   <main class="client-app">
@@ -101,8 +102,16 @@
         <div class="client-section-head">
           <p class="eyebrow">VERA</p>
           <h1>Mensajes <span>y promociones</span></h1>
-          <p class="lead">Promociones, recordatorios y novedades de tu cuenta VERA.</p>
         </div>
+        <form class="glass-card message-composer" id="client-message-form">
+          <h2><span data-fa="comments"></span> Escribir al lubricentro</h2>
+          <label>Asunto<input class="text-input" name="title" maxlength="220" required></label>
+          <label>Mensaje<textarea class="text-input" name="body" rows="4" maxlength="3000" required></textarea></label>
+          <p class="error-text" id="client-message-error" role="alert"></p>
+          <button class="btn primary" id="send-client-message" type="submit"><span data-fa="comments"></span> Enviar</button>
+        </form>
+        <div class="message-history-heading"><h2>Mis mensajes</h2><button class="btn" id="refresh-client-messages" type="button"><span data-fa="rotate"></span> Actualizar</button></div>
+        <div class="message-selection-bar" id="client-message-selection"><span id="client-message-selection-count" aria-live="polite">0 mensajes seleccionados</span><button class="btn danger" id="delete-client-messages" type="button" disabled><span data-fa="trash-can"></span> Eliminar</button></div>
         <div class="message-list" id="message-list"></div>
       </section>
 
@@ -116,6 +125,6 @@
   </main>
   <script src="/js/fa-solid-icons.js"></script>
   <script src="/js/vera-ui.js"></script>
-  <script src="/js/client.js?v=20260911-promo-hierarchy" defer></script>
+  <script src="/js/client.js?v=20260911-bidirectional" defer></script>
 </body>
 </html>

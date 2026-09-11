@@ -14,7 +14,7 @@ from psycopg.types.json import Jsonb
 from api.auth import ADMIN_COOKIE, AdminContext, cookie_options, require_admin, utcnow
 from api.config import settings
 from api.db import connection
-from api.models import AccessQrRequest, AdminLogin, ClientCreate, PromotionInput, ServiceInput, VehicleInput
+from api.models import AccessQrRequest, AdminLogin, AdminMessageInput, ClientCreate, MessageSelection, PromotionInput, ServiceInput, VehicleInput
 from api.push import send_push
 from api.security import hash_password, hash_token, random_token, verify_password
 
@@ -109,7 +109,7 @@ def dashboard(admin: AdminContext = Depends(require_admin)):
               (select count(*) from vera.services where date_trunc('month', service_date)=date_trunc('month', current_date)) as services_month,
               (select count(*) from vera.promotions where deleted_at is null) as promotions,
               (select count(*) from vera.reminders where status='pending') as reminders,
-              (select count(*) from vera.messages where is_read=false and client_deleted_at is null) as unread_messages
+              (select count(*) from vera.messages where sender_role='client' and is_read=false and admin_deleted_at is null) as unread_messages
             """
         ).fetchone()
         activity = conn.execute(
@@ -434,13 +434,83 @@ def admin_messages(admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
         return conn.execute(
             """
-            select m.id,m.message_type,m.title,m.body,m.is_read,m.created_at,m.read_at,
-                   c.full_name as client_name, v.plate
+            select m.id,m.client_id,m.sender_role,m.message_type,m.title,m.body,
+                   m.is_read,m.created_at,m.read_at,c.full_name as client_name, v.plate
             from vera.messages m join vera.clients c on c.id=m.client_id
             left join vera.vehicles v on v.id=m.vehicle_id
-            order by m.created_at desc limit 300
+            where m.admin_deleted_at is null
+            order by m.created_at desc, m.id desc limit 300
             """
         ).fetchall()
+
+
+@router.post("/messages", status_code=201)
+def send_message(payload: AdminMessageInput, admin: AdminContext = Depends(require_admin)):
+    with connection() as conn:
+        if payload.audience_scope == "client":
+            client = conn.execute(
+                "select id, full_name from vera.clients where id=%s for key share",
+                (payload.client_id,),
+            ).fetchone()
+            if not client:
+                raise HTTPException(status_code=404, detail="Cliente no encontrado")
+            audience = client["full_name"]
+        else:
+            audience = "todos los clientes"
+        rows = conn.execute(
+            """
+            insert into vera.messages (client_id, message_type, title, body, sender_role, sender_admin_id)
+            select id, 'message', %s, %s, 'admin', %s
+            from vera.clients
+            where (%s::uuid is null or id=%s::uuid)
+            returning id
+            """,
+            (payload.title, payload.body, admin.id, payload.client_id, payload.client_id),
+        ).fetchall()
+        if not rows:
+            raise HTTPException(status_code=400, detail="No hay clientes para recibir el mensaje")
+        conn.execute(
+            "insert into vera.admin_activity (admin_id, action_type, description) values (%s,%s,%s)",
+            (admin.id, "message_sent", f"Mensaje enviado a {audience}: {len(rows)} destinatario(s)"),
+        )
+    return {"recipients": len(rows)}
+
+
+@router.post("/messages/{message_id}/read")
+def read_admin_message(message_id: UUID, admin: AdminContext = Depends(require_admin)):
+    with connection() as conn:
+        row = conn.execute(
+            """
+            update vera.messages
+            set is_read=true, read_at=coalesce(read_at,now())
+            where id=%s and sender_role='client' and admin_deleted_at is null
+            returning id, read_at
+            """,
+            (message_id,),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Mensaje recibido no encontrado")
+    return row
+
+
+@router.delete("/messages")
+def delete_admin_messages(payload: MessageSelection, admin: AdminContext = Depends(require_admin)):
+    ids = list(dict.fromkeys(payload.ids))
+    with connection() as conn:
+        rows = conn.execute(
+            """
+            update vera.messages set admin_deleted_at=now()
+            where id=any(%s) and admin_deleted_at is null
+            returning id
+            """,
+            (ids,),
+        ).fetchall()
+        if rows:
+            conn.execute(
+                "insert into vera.admin_activity (admin_id, action_type, description) values (%s,%s,%s)",
+                (admin.id, "messages_deleted", f"Mensajes eliminados de la bandeja administrativa: {len(rows)}"),
+            )
+    return {"deleted": len(rows), "ids": [row["id"] for row in rows]}
 
 
 @router.get("/reminders")

@@ -1,0 +1,57 @@
+/* Mensajería compartida: mantiene el fondo y las superficies de VERA. */
+.message-composer{display:grid;gap:16px;margin:0 0 26px;padding:22px}
+.message-composer h2{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-size:1.4rem}
+.message-composer h2 .fa-svg{color:var(--gold2);font-size:1.1rem}
+.message-composer label{display:grid;gap:8px;font-size:1rem;min-width:0}
+.message-composer .text-input{width:100%;min-width:0;font-size:1rem}
+.message-composer textarea{resize:vertical;min-height:120px;line-height:1.5}
+.message-composer .form-actions{margin:0;justify-content:flex-end}
+.message-composer .form-actions .btn{min-width:148px}
+.message-composer .error-text:empty{display:none}
+.message-recipient-search{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin-bottom:16px}
+.message-history-heading,.message-selection-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.message-history-heading{margin:22px 0 16px}
+.message-history-heading h2{margin:0;font-size:1.4rem}
+.message-selection-bar{margin-bottom:16px;color:var(--muted);font-size:.875rem}
+.message-select{width:22px;height:22px;margin:0;flex-shrink:0;accent-color:var(--gold);cursor:pointer}
+.message-selection-label{display:grid;place-items:center;min-width:32px;min-height:44px;cursor:pointer}
+.message-selection-label span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.admin-message-card.selectable{grid-template-columns:32px 44px minmax(0,1fr);align-items:start}
+.admin-message-card.selectable .admin-message-icon{margin-top:1px}
+.admin-message-thread{min-width:0}
+.admin-message-thread summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px;min-height:44px}
+.admin-message-thread summary::-webkit-details-marker{display:none}
+.admin-message-thread summary:focus-visible,.message-open:focus-visible{outline:2px solid var(--gold2);outline-offset:4px;border-radius:4px}
+.admin-message-copy h3{font-size:1rem;overflow-wrap:anywhere}
+.admin-message-copy p{font-size:.95rem;overflow-wrap:anywhere}
+.admin-message-direction{display:block;margin-bottom:6px;color:var(--gold2);font-size:.875rem}
+.admin-message-meta time,.admin-message-meta span{font-size:.875rem}
+.admin-message-body{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+.admin-message-body p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;font-size:1rem}
+.admin-message-body .btn{margin-top:16px}
+.admin-message-card.is-unread{border-color:rgba(217,162,76,.55)}
+.message-card.selectable{grid-template-columns:28px 48px minmax(0,1fr);gap:10px;align-items:start}
+.message-card.selectable .message-icon{width:46px;height:46px;font-size:1.2rem}
+.message-card.selectable.unread:before{left:51px;top:12px}
+.message-open{padding:0;border:0;background:transparent;text-align:left;font:inherit;color:inherit;cursor:pointer;min-width:0;width:100%}
+.message-open .message-tag{font-size:.75rem}
+.message-open h3,.message-open .promotion-title{font-size:1rem;overflow-wrap:anywhere}
+.message-open p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:1rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.message-open time,.message-open .message-read-status{display:block;font-size:.875rem;margin-top:8px;color:var(--muted)}
+.message-detail-card .message-copy p{white-space:pre-wrap;overflow-wrap:anywhere}
+.message-detail-actions{display:flex;gap:12px;flex-wrap:wrap}
+.message-detail-actions .btn{flex:1}
+.message-read-status{font-size:.875rem;color:var(--muted);margin-top:12px}
+@media(max-width:560px){
+  .message-composer{padding:18px 16px}
+  .message-recipient-search{grid-template-columns:minmax(0,1fr) 100px;gap:8px}
+  .message-recipient-search .btn{padding:0 10px}
+  .admin-message-card.selectable{grid-template-columns:28px 36px minmax(0,1fr);gap:10px;padding:16px 12px}
+  .admin-message-card.selectable .admin-message-icon{width:36px;height:36px}
+  .admin-message-thread summary{grid-template-columns:1fr;gap:8px}
+  .admin-message-thread .admin-message-meta{grid-column:auto;text-align:left}
+  .admin-message-meta time{display:inline-block;margin-right:10px}
+  .message-card.selectable{grid-template-columns:24px 36px minmax(0,1fr);gap:8px;padding:16px 12px}
+  .message-card.selectable .message-icon{width:36px;height:36px;font-size:1rem}
+  .message-history-heading h2{font-size:1.25rem}
+}
