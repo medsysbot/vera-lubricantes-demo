@@ -1,29 +1,33 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from typing import Iterator
+
 import psycopg
 from psycopg import Connection
 from psycopg.rows import dict_row
 
-from api.config import Settings
+from api.config import settings
 
 
-def open_database_connection(settings: Settings) -> Connection:
-    return psycopg.connect(
-        settings.database_url,
+@contextmanager
+def connection() -> Iterator[Connection]:
+    conn = psycopg.connect(
+        settings.require_database(),
         row_factory=dict_row,
         connect_timeout=10,
     )
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
-def database_health(settings: Settings) -> None:
-    with open_database_connection(settings) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "select to_regclass('vera.clients') as clients_table, "
-                "to_regclass('vera.vehicles') as vehicles_table, "
-                "to_regclass('vera.services') as services_table"
-            )
-            row = cursor.fetchone()
-
-    if not row or not all(row.values()):
-        raise RuntimeError("El esquema vera no esta disponible")
+def database_health() -> bool:
+    with connection() as conn:
+        row = conn.execute("select to_regclass('vera.clients') as clients_table").fetchone()
+        return bool(row and row["clients_table"])

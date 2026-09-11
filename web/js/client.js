@@ -1,44 +1,23 @@
-const clientViews = [...document.querySelectorAll('[data-client-view]')];
-const clientNav = document.getElementById('client-bottom-nav');
-const pinInputs = [...document.querySelectorAll('.pin-digit')];
-
-function showClientView(name) {
-  const target = clientViews.find((view) => view.dataset.clientView === name);
-  if (!target) return;
-
-  clientViews.forEach((view) => view.classList.toggle('active', view === target));
-
-  const showNav = name !== 'pin';
-  clientNav.classList.toggle('hidden', !showNav);
-
-  clientNav.querySelectorAll('button').forEach((button) => {
-    button.classList.toggle('active', button.dataset.clientGo === name);
-  });
-
-  window.scrollTo({ top: 0, behavior: 'auto' });
-}
-
-document.addEventListener('click', (event) => {
-  const navigationButton = event.target.closest('[data-client-go]');
-  if (navigationButton) {
-    event.preventDefault();
-    showClientView(navigationButton.dataset.clientGo);
-  }
-});
-
-pinInputs.forEach((input, index) => {
-  input.addEventListener('input', () => {
-    input.value = input.value.replace(/\D/g, '').slice(0, 1);
-    if (input.value && pinInputs[index + 1]) pinInputs[index + 1].focus();
-  });
-
-  input.addEventListener('keydown', (event) => {
-    if (event.key === 'Backspace' && !input.value && pinInputs[index - 1]) {
-      pinInputs[index - 1].focus();
-    }
-  });
-});
-
-document.getElementById('show-pin-help')?.addEventListener('click', () => {
-  document.getElementById('pin-help')?.classList.toggle('hidden');
-});
+const state={me:null,vehicle:null,services:[],deferredInstall:null};
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+async function api(url,options={}){const r=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});if(!r.ok){let m=`Error ${r.status}`;try{m=(await r.json()).detail||m}catch{}throw new Error(m)}return r.status===204?null:r.json()}
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function fmtDate(v){if(!v)return'—';const d=new Date(`${v}T00:00:00`);return Number.isNaN(d.getTime())?esc(v):new Intl.DateTimeFormat('es-AR').format(d)}
+function fmtDateTime(v){if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?esc(v):new Intl.DateTimeFormat('es-AR',{dateStyle:'short',timeStyle:'short'}).format(d)}
+const km=v=>v===null||v===undefined?'—':`${Number(v).toLocaleString('es-AR')} km`;
+function showMain(){$('#login-view').classList.remove('active');$('#app-view').classList.add('active');showView('vehicles')}
+function showLogin(){$('#app-view').classList.remove('active');$('#login-view').classList.add('active');$('#client-pin').value=''}
+function showView(name){if(['vehicle','history','detail'].includes(name)&&!state.vehicle)name='vehicles';$$('[data-view]').forEach(v=>v.classList.toggle('active',v.dataset.view===name));$$('.client-nav [data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===name));window.scrollTo({top:0,behavior:'auto'})}
+async function loadMe(){state.me=await api('/api/client/me');$('#client-greeting').textContent=`${state.me.full_name} · ${state.me.phone}`;$('#message-badge').textContent=state.me.unread_messages||0;renderVehicles()}
+function renderVehicles(){const h=$('#vehicle-list'),vs=state.me?.vehicles||[];if(!vs.length){h.innerHTML='<div class="notice">No hay vehículos asociados a esta cuenta.</div>';return}h.innerHTML=vs.map(v=>`<button class="vehicle-card" type="button" data-vehicle-id="${esc(v.id)}"><span class="vehicle-thumb"></span><span><strong>${esc(v.plate)}</strong><small>${esc([v.brand,v.model].filter(Boolean).join(' '))}</small><small>${v.last_service_date?`Último servicio ${fmtDate(v.last_service_date)}`:'Sin servicios registrados'}</small></span><span class="chevron">›</span></button>`).join('')}
+async function selectVehicle(id){state.vehicle=await api(`/api/client/vehicles/${encodeURIComponent(id)}`);state.services=[];renderVehicle();showView('vehicle')}
+function renderVehicle(){const v=state.vehicle.vehicle,s=state.vehicle.latest_service;$('#vehicle-meta').innerHTML=`<div><strong>${esc(v.plate)}</strong><small>Patente</small></div><div><strong>${esc(v.year||'—')}</strong><small>Año</small></div><div><strong>${km(v.current_mileage)}</strong><small>Kilometraje</small></div>`;$('#service-status').innerHTML=`<article class="status-card glass-card"><h3>Último servicio</h3><strong>${s?fmtDate(s.service_date):'Sin registro'}</strong><span class="muted">${s?km(s.mileage):'—'}</span></article><article class="status-card glass-card"><h3>Próximo cambio</h3><strong>${s?.next_change_km?km(s.next_change_km):'Sin definir'}</strong><span class="muted">Según el último servicio</span></article>`;$('#personal-card').innerHTML=`<h3>Datos personales</h3><strong>${esc(state.vehicle.client.full_name)}</strong><p class="muted">${esc(state.vehicle.client.phone)}</p>`}
+async function loadHistory(){state.services=await api(`/api/client/vehicles/${encodeURIComponent(state.vehicle.vehicle.id)}/services`);const h=$('#history-list');h.innerHTML=state.services.length?state.services.map((s,i)=>`<article class="timeline-item glass-card"><div class="row-between"><h3>${fmtDate(s.service_date)}</h3><button class="link-button" data-service-index="${i}">Ver detalle</button></div><p>${km(s.mileage)}</p><p>${s.oil?`Aceite: ${esc(s.oil)}`:'Aceite sin detalle'}</p><p>${s.next_change_km?`Próximo cambio: ${km(s.next_change_km)}`:'Próximo cambio no indicado'}</p></article>`).join(''):'<div class="notice">Todavía no hay servicios registrados.</div>'}
+function renderServiceDetail(s){if(!s){$('#service-detail').innerHTML='<div class="notice">No hay un servicio registrado.</div>';return}const f=[['Fecha',fmtDate(s.service_date)],['Kilómetros',km(s.mileage)],['Próximo cambio km',km(s.next_change_km)],['Aceite',s.oil],['Tipo',s.oil_type],['Filtro de aceite',s.oil_filter],['Filtro de combustible',s.fuel_filter],['Filtro de aire',s.air_filter],['Filtro de cabina',s.cabin_filter],['Bujías',s.spark_plugs],['Aceite caja de vel.',s.gearbox_oil],['Aceite diferencial',s.differential_oil],['Engrase',s.grease],['Líquido hidráulico',s.hydraulic_fluid],['Líquido refrigerante',s.coolant],['Líquido de freno',s.brake_fluid],['Control de neumáticos',s.tire_control],['Rotación de neumáticos',s.tire_rotation],['Batería',s.battery],['Observaciones',s.observations]];$('#service-detail').innerHTML=`<article class="detail-list glass-card">${f.filter(([,v])=>v!==null&&v!==undefined&&v!==''&&v!=='—').map(([l,v])=>`<div class="detail-row"><span>${esc(l)}</span><strong>${l==='Fecha'||l.includes('Kilómetros')||l.includes('km')?v:esc(v)}</strong></div>`).join('')}</article>`}
+async function loadMessages(){const ms=await api('/api/client/messages');$('#message-badge').textContent=ms.filter(m=>!m.is_read).length;$('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card glass-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${m.message_type==='promotion'?'◇':m.message_type==='reminder'?'◷':'✦'}</span><div><span class="message-tag">${esc(m.message_type)}</span><h3>${esc(m.title)}</h3><p>${esc(m.body)}</p><small class="muted">${fmtDateTime(m.created_at)}</small></div></article>`).join(''):'<div class="notice">No tenés mensajes por el momento.</div>'}
+async function enablePush(){const b=$('#enable-push');try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('Este navegador no admite Web Push');const c=await api('/api/client/push/config');if(!c.enabled||!c.public_key)throw new Error('Web Push todavía no está configurado');if(await Notification.requestPermission()!=='granted')throw new Error('Permiso no concedido');const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(c.public_key)});const j=sub.toJSON();await api('/api/client/push/subscription',{method:'POST',body:JSON.stringify({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth})});b.textContent='Activadas';b.disabled=true}catch(e){alert(e.message)}}
+function urlBase64ToUint8Array(s){const p='='.repeat((4-s.length%4)%4),b=(s+p).replace(/-/g,'+').replace(/_/g,'/'),r=atob(b);return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))}
+$('#client-login-form').addEventListener('submit',async e=>{e.preventDefault();$('#client-login-error').textContent='';try{await api('/api/client/login',{method:'POST',body:JSON.stringify({pin:$('#client-pin').value})});await loadMe();showMain()}catch(x){$('#client-login-error').textContent=x.message}});
+$('#forgot-pin').addEventListener('click',()=>$('#pin-help').classList.toggle('hidden'));$('#client-logout').addEventListener('click',async()=>{try{await api('/api/client/logout',{method:'POST'})}catch{}state.me=null;state.vehicle=null;showLogin()});$('#enable-push').addEventListener('click',enablePush);
+document.addEventListener('click',async e=>{const v=e.target.closest('[data-vehicle-id]');if(v){try{await selectVehicle(v.dataset.vehicleId)}catch(x){alert(x.message)}return}const s=e.target.closest('[data-service-index]');if(s){renderServiceDetail(state.services[Number(s.dataset.serviceIndex)]);showView('detail');return}const m=e.target.closest('[data-message-id]');if(m&&m.classList.contains('unread')){try{await api(`/api/client/messages/${m.dataset.messageId}/read`,{method:'POST'});m.classList.remove('unread')}catch{}}const n=e.target.closest('[data-go]');if(!n)return;const t=n.dataset.go;if(t==='history')try{await loadHistory()}catch(x){alert(x.message)}if(t==='detail'){if(!state.services.length&&state.vehicle)try{await loadHistory()}catch{}renderServiceDetail(state.services[0]||state.vehicle?.latest_service)}if(t==='messages')try{await loadMessages()}catch(x){alert(x.message)}showView(t)});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();state.deferredInstall=e;$('#install-button').hidden=false});$('#install-button').addEventListener('click',async()=>{if(!state.deferredInstall)return;await state.deferredInstall.prompt();state.deferredInstall=null;$('#install-button').hidden=true});if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(console.error));showLogin();
