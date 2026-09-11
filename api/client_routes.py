@@ -95,7 +95,10 @@ def me(client: ClientContext = Depends(require_client)):
             """,
             (client.id,),
         ).fetchall()
-        unread = conn.execute("select count(*) as n from vera.messages where client_id=%s and is_read=false", (client.id,)).fetchone()["n"]
+        unread = conn.execute(
+            "select count(*) as n from vera.messages where client_id=%s and is_read=false and client_deleted_at is null",
+            (client.id,),
+        ).fetchone()["n"]
     return {"id": client.id, "full_name": client.full_name, "phone": client.phone, "vehicles": vehicles, "unread_messages": unread}
 
 
@@ -132,7 +135,15 @@ def services(vehicle_id: UUID, client: ClientContext = Depends(require_client)):
 def messages(client: ClientContext = Depends(require_client)):
     with connection() as conn:
         rows = conn.execute(
-            "select id, message_type, title, body, is_read, created_at, read_at, vehicle_id from vera.messages where client_id=%s order by created_at desc limit 200",
+            """
+            select m.id, m.message_type, m.title, m.body, m.is_read, m.created_at,
+                   m.read_at, m.vehicle_id, p.criterion_value as promotion_item
+            from vera.messages m
+            left join vera.promotions p on p.id=m.promotion_id
+            where m.client_id=%s and m.client_deleted_at is null
+            order by m.created_at desc
+            limit 200
+            """,
             (client.id,),
         ).fetchall()
     return rows
@@ -142,7 +153,31 @@ def messages(client: ClientContext = Depends(require_client)):
 def read_message(message_id: UUID, client: ClientContext = Depends(require_client)):
     with connection() as conn:
         row = conn.execute(
-            "update vera.messages set is_read=true, read_at=coalesce(read_at,now()) where id=%s and client_id=%s returning id",
+            """
+            update vera.messages
+            set is_read=true, read_at=coalesce(read_at,now())
+            where id=%s and client_id=%s and client_deleted_at is null
+            returning id
+            """,
+            (message_id, client.id),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Mensaje no encontrado")
+    return {"ok": True}
+
+
+@router.delete("/messages/{message_id}")
+def delete_message(message_id: UUID, client: ClientContext = Depends(require_client)):
+    with connection() as conn:
+        row = conn.execute(
+            """
+            update vera.messages
+            set client_deleted_at=coalesce(client_deleted_at,now()),
+                is_read=true,
+                read_at=coalesce(read_at,now())
+            where id=%s and client_id=%s and client_deleted_at is null
+            returning id
+            """,
             (message_id, client.id),
         ).fetchone()
         if not row:
