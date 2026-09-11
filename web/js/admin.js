@@ -75,6 +75,18 @@
       });
     }
 
+    function selectedPromotionIds() {
+      return $$('[data-promotion-select]:checked', $('#published-promotions')).map(input => input.value);
+    }
+
+    function updatePromotionDeleteButton() {
+      const button = $('#delete-promotions');
+      if (!button) return;
+      const count = selectedPromotionIds().length;
+      button.disabled = count === 0;
+      button.innerHTML = `${icon('trash-can')} Eliminar promociones${count ? ` (${count})` : ''}`;
+    }
+
     function decorateStaticIcons() {
       const nav = { dashboard:'house', clients:'users', vehicles:'car', services:'wrench', promotions:'tags', messages:'comments', reminders:'bell' };
       $$('.admin-nav [data-admin-go]').forEach(b => {
@@ -95,6 +107,7 @@
       staticButtons.forEach(([selector,name]) => {
         const b = $(selector); if (b && !b.querySelector('.fa-svg')) b.insertAdjacentHTML('afterbegin', icon(name));
       });
+      updatePromotionDeleteButton();
     }
 
     function loginView(){ $('#admin-login').classList.remove('hidden'); $('#admin-app').classList.add('hidden'); }
@@ -204,7 +217,25 @@
     function pp(){const f=new FormData($('#promotion-form'));return{title:f.get('title'),detail:f.get('detail'),audience_scope:f.get('audience_scope'),criterion_value:f.get('criterion_value')}}
     $('#preview-promotion').onclick=async()=>{try{const payload=pp(),x=await api('/api/admin/promotions/preview',{method:'POST',body:JSON.stringify(payload)});state.promotionPreviewSignature=promotionAudienceSignature();state.promotionPreviewCount=x.count;const label=payload.audience_scope==='all'?'clientes registrados':'clientes únicos coincidentes';$('#promotion-preview').innerHTML=`<div class="audience-number">${x.count}</div><p>${label}</p>`}catch(x){invalidatePromotionPreview();UI.notify(x.message,'error')}};
     $('#promotion-form').addEventListener('submit',async e=>{e.preventDefault();$('#promotion-error').textContent='';const payload=pp();if(state.promotionPreviewSignature!==promotionAudienceSignature()||state.promotionPreviewCount==null){UI.notify('Calculá nuevamente la audiencia antes de publicar.','error',{title:'Audiencia pendiente'});return}const all=payload.audience_scope==='all',count=state.promotionPreviewCount,message=all?`Esta promoción se enviará inmediatamente a TODOS los ${count} clientes registrados y quedará publicada.`:`Esta promoción se enviará inmediatamente a ${count} cliente(s) coincidente(s) con el historial y quedará publicada.`;const ok=await UI.confirmAction({title:'Publicar promoción',message,confirmText:'Publicar'});if(!ok)return;const busy=UI.notify('Publicando promoción…','loading');try{const x=await api('/api/admin/promotions',{method:'POST',body:JSON.stringify(payload)});busy.close();UI.notify(`Promoción publicada para ${x.recipients} cliente(s).`,'success');e.target.reset();setPromotionScope('history',false);invalidatePromotionPreview();await promotions()}catch(x){busy.close();$('#promotion-error').textContent=x.message;UI.notify(x.message,'error')}});
-    async function promotions(){const x=await api('/api/admin/promotions');$('#published-promotions').innerHTML=x.map(p=>`<p><strong>${esc(p.title)}</strong> · ${p.audience_scope==='all'?'Todos los clientes':'Historial automático'} · ${esc(p.criterion_value)} · ${p.recipients} destinatarios</p>`).join('')||'<p>Sin promociones publicadas.</p>'}
+    async function promotions(){
+      const x=await api('/api/admin/promotions');
+      $('#published-promotions').innerHTML=x.map(p=>`<article class="record-card glass-card"><div class="record-head"><label><input type="checkbox" data-promotion-select value="${esc(p.id)}"> <strong>${esc(p.title)}</strong></label><span>${p.recipients} destinatarios</span></div><p>${p.audience_scope==='all'?'Todos los clientes':'Historial automático'} · ${esc(p.criterion_value)}</p></article>`).join('')||'<p>Sin promociones publicadas.</p>';
+      updatePromotionDeleteButton();
+    }
+    document.addEventListener('change',e=>{if(e.target.matches('[data-promotion-select]'))updatePromotionDeleteButton()});
+    $('#delete-promotions').addEventListener('click',async()=>{
+      const ids=selectedPromotionIds();
+      if(!ids.length)return;
+      const ok=await UI.confirmAction({title:'Eliminar promociones',message:`Se eliminarán ${ids.length} promoción(es) del panel y de las bandejas de los clientes. Las notificaciones que Android o iOS ya mostraron pueden permanecer en el centro de notificaciones del dispositivo.`,confirmText:'Eliminar promociones',danger:true});
+      if(!ok)return;
+      const busy=UI.notify('Eliminando promociones…','loading');
+      try{
+        const x=await api('/api/admin/promotions',{method:'DELETE',body:JSON.stringify(ids)});
+        busy.close();
+        await promotions();
+        UI.notify(`${x.deleted} promoción(es) eliminada(s).`,'success');
+      }catch(x){busy.close();UI.notify(x.message,'error',{title:'No se pudieron eliminar las promociones'})}
+    });
     async function messages(){const x=await api('/api/admin/messages');$('#admin-messages').innerHTML=x.map(m=>`<tr><td>${dt(m.created_at)}</td><td>${esc(m.client_name)}</td><td>${esc(m.message_type)}</td><td>${esc(m.title)}</td><td>${m.is_read?'Leído':'No leído'}</td></tr>`).join('')||'<tr><td colspan="5">Sin mensajes.</td></tr>'}
     async function reminders(){const x=await api('/api/admin/reminders');$('#admin-reminders').innerHTML=x.map(r=>`<tr><td>${esc(r.client_name)}</td><td>${esc(r.plate)} · ${esc(r.model)}</td><td>${d(r.due_date)}</td><td>${dt(r.notify_at)}</td><td>${esc(r.status)}</td></tr>`).join('')||'<tr><td colspan="5">No hay recordatorios programados.</td></tr>'}
 
