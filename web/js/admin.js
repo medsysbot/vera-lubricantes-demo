@@ -16,7 +16,7 @@
     const $$ = (s, r = document) => [...r.querySelectorAll(s)];
     const UI = window.VeraUI;
     const icon = UI.icon;
-    const state = { admin: null, clients: [], vehicles: [], serviceVehicle: null, services: [], qrUrl: '' };
+    const state = { admin: null, clients: [], vehicles: [], serviceVehicle: null, services: [], qrUrl: '', promotionPreviewSignature: null, promotionPreviewCount: null };
     const F = ['service_date','mileage','next_change_km','oil','oil_type','oil_filter','fuel_filter','air_filter','cabin_filter','spark_plugs','gearbox_oil','differential_oil','grease','hydraulic_fluid','coolant','brake_fluid','tire_control','tire_rotation','battery','observations'];
 
     async function api(u, o = {}) {
@@ -35,6 +35,45 @@
     const km = v => v == null ? '—' : `${Number(v).toLocaleString('es-AR')} km`;
     const n = v => String(v ?? '').trim() === '' ? null : Number(v);
     const t = v => String(v ?? '').trim() || null;
+
+    function promotionAudienceSignature() {
+      const f = new FormData($('#promotion-form'));
+      return JSON.stringify({ audience_scope: f.get('audience_scope'), criterion_value: String(f.get('criterion_value') || '').trim() });
+    }
+
+    function invalidatePromotionPreview() {
+      state.promotionPreviewSignature = null;
+      state.promotionPreviewCount = null;
+      $('#promotion-preview').innerHTML = '<p class="muted">Calculá la audiencia antes de publicar.</p>';
+    }
+
+    function setPromotionScope(scope, invalidate = true) {
+      const form = $('#promotion-form');
+      form.elements.audience_scope.value = scope;
+      $$('[data-promotion-scope]', form).forEach(button => button.classList.toggle('primary', button.dataset.promotionScope === scope));
+      if (invalidate) invalidatePromotionPreview();
+    }
+
+    function setupPromotionForm() {
+      const form = $('#promotion-form');
+      const criterion = form.elements.criterion;
+      const criterionLabel = criterion?.closest('label');
+      if (criterionLabel) {
+        criterionLabel.innerHTML = '<span>Destino</span><div class="form-actions"><button class="btn primary" type="button" data-promotion-scope="history">Automático según historial</button><button class="btn" type="button" data-promotion-scope="all">Todos los clientes</button></div><input type="hidden" name="audience_scope" value="history">';
+      }
+      const value = form.elements.criterion_value;
+      const valueLabel = value?.closest('label');
+      if (valueLabel) {
+        valueLabel.innerHTML = '<span>Ítem o condición</span><input class="text-input" name="criterion_value" placeholder="Ej. 20W50, batería, Visa 6 cuotas sin interés, pago con cheque..." required>';
+      }
+      form.addEventListener('input', e => {
+        if (e.target.name === 'criterion_value') invalidatePromotionPreview();
+      });
+      form.addEventListener('click', e => {
+        const button = e.target.closest('[data-promotion-scope]');
+        if (button) setPromotionScope(button.dataset.promotionScope);
+      });
+    }
 
     function decorateStaticIcons() {
       const nav = { dashboard:'house', clients:'users', vehicles:'car', services:'wrench', promotions:'tags', messages:'comments', reminders:'bell' };
@@ -161,13 +200,14 @@
     $('#cancel-service').onclick=()=>$('#service-editor').classList.add('hidden');
     $('#service-form').addEventListener('submit',async e=>{e.preventDefault();$('#service-error').textContent='';const form=new FormData(e.target),p={};F.forEach(k=>p[k]=['mileage','next_change_km'].includes(k)?n(form.get(k)):t(form.get(k)));p.service_date=form.get('service_date');const id=$('#service-id').value,v=$('#service-vehicle-id').value;const busy=UI.notify(id?'Guardando corrección…':'Registrando servicio…','loading');try{await api(id?`/api/admin/services/${id}`:`/api/admin/vehicles/${v}/services`,{method:id?'PUT':'POST',body:JSON.stringify(p)});busy.close();await serviceVehicle(v);UI.notify(id?'Corrección guardada correctamente.':'Servicio registrado correctamente.','success')}catch(x){busy.close();$('#service-error').textContent=x.message;UI.notify(x.message,'error')}});
 
-    function pp(){const f=new FormData($('#promotion-form')),[s,k]=String(f.get('criterion')).split(':');return{title:f.get('title'),detail:f.get('detail'),criterion_source:s,criterion_field:k,criterion_value:f.get('criterion_value')}}
-    $('#preview-promotion').onclick=async()=>{try{const x=await api('/api/admin/promotions/preview',{method:'POST',body:JSON.stringify(pp())});$('#promotion-preview').innerHTML=`<div class="audience-number">${x.count}</div><p>clientes únicos coincidentes</p>`}catch(x){UI.notify(x.message,'error')}};
-    $('#promotion-form').addEventListener('submit',async e=>{e.preventDefault();const ok=await UI.confirmAction({title:'Publicar promoción',message:'La promoción se enviará inmediatamente a la audiencia calculada y quedará registrada como publicada.',confirmText:'Publicar'});if(!ok)return;const busy=UI.notify('Publicando promoción…','loading');try{const x=await api('/api/admin/promotions',{method:'POST',body:JSON.stringify(pp())});busy.close();UI.notify(`Promoción publicada para ${x.recipients} cliente(s).`,'success');e.target.reset();await promotions()}catch(x){busy.close();$('#promotion-error').textContent=x.message;UI.notify(x.message,'error')}});
-    async function promotions(){const x=await api('/api/admin/promotions');$('#published-promotions').innerHTML=x.map(p=>`<p><strong>${esc(p.title)}</strong> · ${esc(p.criterion_field)}=${esc(p.criterion_value)} · ${p.recipients} destinatarios</p>`).join('')||'<p>Sin promociones publicadas.</p>'}
+    function pp(){const f=new FormData($('#promotion-form'));return{title:f.get('title'),detail:f.get('detail'),audience_scope:f.get('audience_scope'),criterion_value:f.get('criterion_value')}}
+    $('#preview-promotion').onclick=async()=>{try{const payload=pp(),x=await api('/api/admin/promotions/preview',{method:'POST',body:JSON.stringify(payload)});state.promotionPreviewSignature=promotionAudienceSignature();state.promotionPreviewCount=x.count;const label=payload.audience_scope==='all'?'clientes registrados':'clientes únicos coincidentes';$('#promotion-preview').innerHTML=`<div class="audience-number">${x.count}</div><p>${label}</p>`}catch(x){invalidatePromotionPreview();UI.notify(x.message,'error')}};
+    $('#promotion-form').addEventListener('submit',async e=>{e.preventDefault();$('#promotion-error').textContent='';const payload=pp();if(state.promotionPreviewSignature!==promotionAudienceSignature()||state.promotionPreviewCount==null){UI.notify('Calculá nuevamente la audiencia antes de publicar.','error',{title:'Audiencia pendiente'});return}const all=payload.audience_scope==='all',count=state.promotionPreviewCount,message=all?`Esta promoción se enviará inmediatamente a TODOS los ${count} clientes registrados y quedará publicada.`:`Esta promoción se enviará inmediatamente a ${count} cliente(s) coincidente(s) con el historial y quedará publicada.`;const ok=await UI.confirmAction({title:'Publicar promoción',message,confirmText:'Publicar'});if(!ok)return;const busy=UI.notify('Publicando promoción…','loading');try{const x=await api('/api/admin/promotions',{method:'POST',body:JSON.stringify(payload)});busy.close();UI.notify(`Promoción publicada para ${x.recipients} cliente(s).`,'success');e.target.reset();setPromotionScope('history',false);invalidatePromotionPreview();await promotions()}catch(x){busy.close();$('#promotion-error').textContent=x.message;UI.notify(x.message,'error')}});
+    async function promotions(){const x=await api('/api/admin/promotions');$('#published-promotions').innerHTML=x.map(p=>`<p><strong>${esc(p.title)}</strong> · ${p.audience_scope==='all'?'Todos los clientes':'Historial automático'} · ${esc(p.criterion_value)} · ${p.recipients} destinatarios</p>`).join('')||'<p>Sin promociones publicadas.</p>'}
     async function messages(){const x=await api('/api/admin/messages');$('#admin-messages').innerHTML=x.map(m=>`<tr><td>${dt(m.created_at)}</td><td>${esc(m.client_name)}</td><td>${esc(m.message_type)}</td><td>${esc(m.title)}</td><td>${m.is_read?'Leído':'No leído'}</td></tr>`).join('')||'<tr><td colspan="5">Sin mensajes.</td></tr>'}
     async function reminders(){const x=await api('/api/admin/reminders');$('#admin-reminders').innerHTML=x.map(r=>`<tr><td>${esc(r.client_name)}</td><td>${esc(r.plate)} · ${esc(r.model)}</td><td>${d(r.due_date)}</td><td>${dt(r.notify_at)}</td><td>${esc(r.status)}</td></tr>`).join('')||'<tr><td colspan="5">No hay recordatorios programados.</td></tr>'}
 
+    setupPromotionForm();
     decorateStaticIcons();
     boot();
   }

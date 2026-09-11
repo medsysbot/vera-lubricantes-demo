@@ -349,16 +349,18 @@ def access_qr(client_id: UUID, payload: AccessQrRequest, request: Request, admin
 @router.post("/promotions/preview")
 def promotion_preview(payload: PromotionInput, admin: AdminContext = Depends(require_admin)):
     ids = _promotion_clients(payload)
-    return {"count": len(ids)}
+    return {"count": len(ids), "audience_scope": payload.audience_scope}
 
 
 @router.post("/promotions", status_code=201)
 def publish_promotion(payload: PromotionInput, admin: AdminContext = Depends(require_admin)):
     client_ids = _promotion_clients(payload)
+    legacy_source = "service" if payload.audience_scope == "history" else "vehicle"
+    legacy_field = "oil" if payload.audience_scope == "history" else "model"
     with connection() as conn:
         promotion = conn.execute(
-            "insert into vera.promotions (title, detail, criterion_source, criterion_field, criterion_value, created_by_admin_id, published_at) values (%s,%s,%s,%s,%s,%s,now()) returning id, title, published_at",
-            (payload.title.strip(), payload.detail.strip(), payload.criterion_source, payload.criterion_field, payload.criterion_value.strip(), admin.id),
+            "insert into vera.promotions (title, detail, audience_scope, criterion_source, criterion_field, criterion_value, created_by_admin_id, published_at) values (%s,%s,%s,%s,%s,%s,%s,now()) returning id, title, published_at",
+            (payload.title.strip(), payload.detail.strip(), payload.audience_scope, legacy_source, legacy_field, payload.criterion_value.strip(), admin.id),
         ).fetchone()
         for client_id in client_ids:
             conn.execute(
@@ -382,7 +384,7 @@ def list_promotions(admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
         return conn.execute(
             """
-            select p.id,p.title,p.detail,p.criterion_source,p.criterion_field,p.criterion_value,p.published_at,
+            select p.id,p.title,p.detail,p.audience_scope,p.criterion_value,p.published_at,
                    (select count(*) from vera.messages m where m.promotion_id=p.id) as recipients
             from vera.promotions p order by p.published_at desc nulls last
             """
@@ -421,34 +423,30 @@ def _promotion_match_value(value: str) -> str:
 
 
 def _promotion_clients(payload: PromotionInput) -> list[UUID]:
-    normalized_value = _promotion_match_value(payload.criterion_value)
-    if not normalized_value:
-        raise HTTPException(status_code=400, detail="El valor de la promoción no contiene caracteres buscables")
-    value = f"%{normalized_value}%"
     with connection() as conn:
-        if payload.criterion_source == "vehicle" and payload.criterion_field == "model":
-            rows = conn.execute(
-                """
-                select distinct client_id
-                from vera.vehicles
-                where regexp_replace(translate(lower(coalesce(model, '')), 'áéíóúüñ', 'aeiouun'), '[^a-z0-9]+', '', 'g') like %s
-                """,
-                (value,),
-            ).fetchall()
-        elif payload.criterion_source == "service" and payload.criterion_field in PROMOTION_SERVICE_FIELDS:
-            service_fields = ", ".join(f"s.{field}" for field in sorted(PROMOTION_SERVICE_FIELDS))
-            rows = conn.execute(
-                f"""
-                select distinct v.client_id
-                from vera.services s
-                join vera.vehicles v on v.id=s.vehicle_id
-                where regexp_replace(
+        if payload.audience_scope == "all":
+            rows = conn.execute("select id as client_id from vera.clients order by id").fetchall()
+            return [r["client_id"] for r in rows]
+
+        normalized_value = _promotion_match_value(payload.criterion_value)
+        if not normalized_value:
+            raise HTTPException(status_code=400, detail="El ítem o condición no contiene caracteres buscables")
+        value = f"%{normalized_value}%"
+        service_fields = ", ".join(f"s.{field}" for field in sorted(PROMOTION_SERVICE_FIELDS))
+        rows = conn.execute(
+            f"""
+            select distinct v.client_id
+            from vera.vehicles v
+            left join vera.services s on s.vehicle_id=v.id
+            where regexp_replace(
+                    translate(lower(coalesce(v.model, '')), 'áéíóúüñ', 'aeiouun'),
+                    '[^a-z0-9]+', '', 'g'
+                  ) like %s
+               or regexp_replace(
                     translate(lower(concat_ws(' ', {service_fields})), 'áéíóúüñ', 'aeiouun'),
                     '[^a-z0-9]+', '', 'g'
-                ) like %s
-                """,
-                (value,),
-            ).fetchall()
-        else:
-            raise HTTPException(status_code=400, detail="Criterio de promocion no aprobado")
+                  ) like %s
+            """,
+            (value, value),
+        ).fetchall()
     return [r["client_id"] for r in rows]

@@ -71,24 +71,5 @@ class PushSubscriptionInput(BaseModel):
 class PromotionInput(BaseModel):
     title: str = Field(min_length=1, max_length=220)
     detail: str = Field(min_length=1, max_length=3000)
-    criterion_source: Literal["vehicle", "service"]
-    criterion_field: Literal[
-        "model",
-        "oil",
-        "oil_type",
-        "oil_filter",
-        "fuel_filter",
-        "air_filter",
-        "cabin_filter",
-        "spark_plugs",
-        "gearbox_oil",
-        "differential_oil",
-        "grease",
-        "hydraulic_fluid",
-        "coolant",
-        "brake_fluid",
-        "tire_control",
-        "tire_rotation",
-        "battery",
-    ]
+    audience_scope: Literal["history", "all"]
     criterion_value: str = Field(min_length=1, max_length=200)
