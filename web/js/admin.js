@@ -422,6 +422,7 @@
 
     setupPromotionForm();
     decorateStaticIcons();
+    UI.decorateIcons();
     boot();
   }
 
