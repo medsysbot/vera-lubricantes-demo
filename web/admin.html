@@ -141,7 +141,7 @@
           </form>
           <section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section>
         </div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="panel-heading"><div><p class="panel-kicker">Historial</p><h2>Promociones publicadas</h2></div></div><div id="published-promotions"></div></section>
+        <section class="glass-card admin-panel dashboard-panel"><div class="panel-heading"><div><p class="panel-kicker">Historial</p><h2>Promociones publicadas</h2></div><button class="btn danger" id="delete-promotions" type="button" disabled>Eliminar promociones</button></div><div id="published-promotions"></div></section>
       </section>
 
       <section class="admin-view" data-admin-view="messages">
@@ -161,6 +161,6 @@
 
   <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button">Copiar enlace</button></dialog>
   <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit">Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
-  <script src="/js/admin.js?v=20260911-save-label" defer></script>
+  <script src="/js/admin.js?v=20260911-promotion-delete" defer></script>
 </body>
 </html>
