@@ -1,5 +1,5 @@
 /* Presentación de la PWA cliente y su activación. */
-.client-body{background:#020812;--muted:#b2bdc7;--muted2:#98a7b5;--glass-background:linear-gradient(145deg,rgba(8,25,39,.76),rgba(3,13,23,.84))}
+.client-body{background:#020812;--muted:#b2bdc7;--muted2:#98a7b5;--glass-background:rgba(0,0,0,.72)}
 .client-app{width:min(100%,560px);min-height:100dvh;margin:auto;position:relative;background:transparent}
 .client-view{min-height:100dvh;padding:0 20px calc(108px + env(safe-area-inset-bottom))}
 .client-view:not(.active){display:none}
@@ -40,25 +40,25 @@
 .client-utility-card strong{display:block;font-size:.95rem}
 .client-utility-card p{margin:5px 0 0;font-size:.85rem;line-height:1.5}
 .client-utility-card .btn{min-width:96px}
-.vehicle-overview{overflow:hidden;border:1px solid rgba(137,159,180,.26);border-radius:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:var(--shadow)}
+.vehicle-overview{overflow:hidden;border:1px solid rgba(137,159,180,.26);border-radius:18px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:var(--shadow)}
 .vehicle-overview-top{min-height:132px;padding:22px 20px;display:grid;grid-template-columns:minmax(0,1fr);align-items:center}
 .vehicle-identity{grid-column:1;grid-row:1;min-width:0}
 .vehicle-identity .eyebrow{margin-bottom:8px}
 .vehicle-identity h2{margin:0;font-size:2.2rem;line-height:1.1;overflow-wrap:anywhere}
 .vehicle-identity p{margin:8px 0 0;color:var(--muted);font-size:.95rem;line-height:1.4;overflow-wrap:anywhere}
-.vehicle-meta-premium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(137,159,180,.2);background:rgba(0,0,0,.16)}
+.vehicle-meta-premium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(137,159,180,.2);background:transparent}
 .vehicle-meta-premium div{padding:16px 8px;text-align:center;min-width:0;border-right:1px solid rgba(137,159,180,.18)}
 .vehicle-meta-premium div:last-child{border-right:0}
 .vehicle-meta-premium .meta-icon{display:block;margin-bottom:8px;color:var(--gold2);font-size:1.1rem}
 .vehicle-meta-premium strong{display:block;font-size:.875rem;line-height:1.4;overflow-wrap:anywhere}
 .vehicle-meta-premium small{display:block;margin-top:5px;color:var(--muted);font-size:.75rem;line-height:1.4}
-.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
-.status-card{padding:18px 14px;border:1px solid rgba(217,162,76,.3);border-radius:18px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);min-width:0}
-.status-card h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:var(--gold2);font-family:var(--sans);font-size:.75rem;font-weight:750;line-height:1.5}
+.status-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}
+.status-card{display:grid;align-content:start;gap:0;width:100%;min-width:0;padding:20px;border:1px solid rgba(217,162,76,.3);border-radius:18px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--text);font:inherit;text-align:left}
+.status-card h3{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:center;gap:10px;margin:0 0 12px;color:var(--gold2);font-family:var(--sans);font-size:.8rem;font-weight:750;line-height:1.5}
 .status-card h3 .fa-svg{font-size:1.1rem}
-.status-card strong{display:block;font-family:var(--serif);font-size:1.4rem;font-weight:500;line-height:1.3;overflow-wrap:anywhere}
-.status-card .status-sub{display:block;margin-top:6px;color:var(--muted);font-size:.8rem;line-height:1.5}
-.status-card-action{width:100%;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.status-card strong{display:block;margin:0;font-family:var(--serif);font-size:1.6rem;font-weight:500;line-height:1.3;overflow-wrap:anywhere}
+.status-card .status-sub{display:block;margin-top:6px;color:var(--muted);font-size:.875rem;line-height:1.5}
+.status-card-action{cursor:pointer}
 .status-card-action:active{transform:scale(.992)}
 .personal-card{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;margin-top:16px;padding:20px}
 .personal-card .personal-icon{display:grid;place-items:center;width:50px;height:50px;border:1px solid rgba(217,162,76,.4);border-radius:50%;color:var(--gold2)}
@@ -72,7 +72,7 @@
 .history-vehicle-card p,.service-vehicle-card p{margin:4px 0 0;color:var(--muted);font-size:.875rem;line-height:1.4;overflow-wrap:anywhere}
 .timeline{position:relative;margin:0 0 0 8px;padding-left:26px}
 .timeline:before{content:"";position:absolute;left:5px;top:17px;bottom:18px;width:1px;background:linear-gradient(#d9a24c,#536477)}
-.timeline-item{position:relative;margin-bottom:14px;padding:18px;border:1px solid rgba(117,145,169,.22);border-radius:17px;background:var(--glass-background);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 14px 30px rgba(0,0,0,.16)}
+.timeline-item{position:relative;margin-bottom:14px;padding:18px;border:1px solid rgba(117,145,169,.22);border-radius:17px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 14px 30px rgba(0,0,0,.16)}
 .timeline-item:before{content:"";position:absolute;left:-31px;top:24px;width:13px;height:13px;border:3px solid var(--gold);border-radius:50%;background:#07131f;box-shadow:0 0 0 3px rgba(217,162,76,.08)}
 .timeline-item.is-latest{border-color:rgba(217,162,76,.45)}
 .timeline-kicker{margin-bottom:12px;color:var(--gold2);font-size:.75rem;font-weight:750}
@@ -88,7 +88,7 @@
 .service-summary span{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem}
 .service-summary span .fa-svg{color:var(--gold2)}
 .service-summary strong{display:block;margin-top:7px;font-family:var(--serif);font-size:1.25rem}
-.detail-list{overflow:hidden;border:1px solid rgba(217,162,76,.3);border-radius:20px;background:var(--glass-background);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.detail-list{overflow:hidden;border:1px solid rgba(217,162,76,.3);border-radius:20px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .detail-section-title{padding:16px;color:var(--gold2);font-family:var(--sans);font-size:.8rem;font-weight:750;border-bottom:1px solid rgba(217,162,76,.2)}
 .detail-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(0,1.25fr) 24px;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid rgba(117,145,169,.13)}
 .detail-row:last-child{border-bottom:0}
@@ -97,7 +97,7 @@
 .detail-row strong{text-align:right;color:#f2f0ea;font-size:.86rem;font-weight:600;overflow-wrap:anywhere}
 .detail-row .check{color:var(--gold2);font-size:.8rem}
 .message-list{display:grid;gap:14px;margin-top:18px}
-.message-card{position:relative;display:grid;grid-template-columns:60px minmax(0,1fr) 22px;gap:14px;align-items:center;padding:18px;border:1px solid rgba(117,145,169,.22);border-radius:19px;background:var(--glass-background);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 16px 34px rgba(0,0,0,.18)}
+.message-card{position:relative;display:grid;grid-template-columns:60px minmax(0,1fr) 22px;gap:14px;align-items:center;padding:18px;border:1px solid rgba(117,145,169,.22);border-radius:19px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 16px 34px rgba(0,0,0,.18)}
 .message-card.unread{border-color:rgba(217,162,76,.55)}
 .message-card.unread:before{content:"";position:absolute;top:16px;left:12px;width:7px;height:7px;border-radius:50%;background:var(--red)}
 .message-icon{display:grid;place-items:center;width:58px;height:58px;border:1px solid rgba(217,162,76,.36);border-radius:50%;color:var(--gold2);background:radial-gradient(circle,rgba(217,162,76,.12),transparent 65%);font-size:1.35rem}
@@ -189,7 +189,6 @@
   .vehicle-card{grid-template-columns:44px minmax(0,1fr) 16px;gap:10px;padding:16px 12px}
   .vehicle-card-icon{width:44px;height:44px;font-size:1.2rem}
   .vehicle-card-copy strong{font-size:1.4rem}
-  .status-grid{grid-template-columns:1fr}
   .timeline-item{padding:16px 12px}
   .timeline-main{grid-template-columns:minmax(0,1fr)}
   .client-nav button{font-size:.7rem}
