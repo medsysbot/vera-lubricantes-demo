@@ -32,6 +32,7 @@ PROMOTION_SERVICE_FIELDS = {
     "spark_plugs", "gearbox_oil", "differential_oil", "grease", "hydraulic_fluid",
     "coolant", "brake_fluid", "tire_control", "tire_rotation", "battery",
 }
+PROMOTION_ACCENT_TRANSLATION = str.maketrans("áéíóúüñ", "aeiouun")
 
 
 def ensure_bootstrap_admin() -> None:
@@ -372,7 +373,7 @@ def publish_promotion(payload: PromotionInput, admin: AdminContext = Depends(req
             "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
             (admin.id, "promotion_published", f"Promocion publicada: {promotion['title']}", str(promotion["id"])),
         )
-    sent = sum(1 for s in subscriptions if send_push(s, {"title": payload.title, "body": payload.detail, "url": "/"}))
+    sent = sum(1 for s in subscriptions if send_push(s, {"title": payload.title, "body": payload.detail, "url": "/cliente"}))
     return {"promotion": promotion, "recipients": len(client_ids), "push_sent": sent}
 
 
@@ -414,18 +415,38 @@ def reminders(admin: AdminContext = Depends(require_admin)):
         ).fetchall()
 
 
+def _promotion_match_value(value: str) -> str:
+    normalized = value.strip().lower().translate(PROMOTION_ACCENT_TRANSLATION)
+    return "".join(character for character in normalized if character.isascii() and character.isalnum())
+
+
 def _promotion_clients(payload: PromotionInput) -> list[UUID]:
-    value = f"%{payload.criterion_value.strip()}%"
+    normalized_value = _promotion_match_value(payload.criterion_value)
+    if not normalized_value:
+        raise HTTPException(status_code=400, detail="El valor de la promoción no contiene caracteres buscables")
+    value = f"%{normalized_value}%"
     with connection() as conn:
         if payload.criterion_source == "vehicle" and payload.criterion_field == "model":
             rows = conn.execute(
-                "select distinct client_id from vera.vehicles where model ilike %s",
+                """
+                select distinct client_id
+                from vera.vehicles
+                where regexp_replace(translate(lower(coalesce(model, '')), 'áéíóúüñ', 'aeiouun'), '[^a-z0-9]+', '', 'g') like %s
+                """,
                 (value,),
             ).fetchall()
         elif payload.criterion_source == "service" and payload.criterion_field in PROMOTION_SERVICE_FIELDS:
-            column = payload.criterion_field
+            service_fields = ", ".join(f"s.{field}" for field in sorted(PROMOTION_SERVICE_FIELDS))
             rows = conn.execute(
-                f"select distinct v.client_id from vera.services s join vera.vehicles v on v.id=s.vehicle_id where s.{column} ilike %s",
+                f"""
+                select distinct v.client_id
+                from vera.services s
+                join vera.vehicles v on v.id=s.vehicle_id
+                where regexp_replace(
+                    translate(lower(concat_ws(' ', {service_fields})), 'áéíóúüñ', 'aeiouun'),
+                    '[^a-z0-9]+', '', 'g'
+                ) like %s
+                """,
                 (value,),
             ).fetchall()
         else:
