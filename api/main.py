@@ -19,6 +19,11 @@ logger = logging.getLogger("vera")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = BASE_DIR / "web"
+NO_STORE_HEADERS = {
+    "Cache-Control": "no-store, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
 
 
 @asynccontextmanager
@@ -67,18 +72,18 @@ def health_db():
 
 @app.get("/", include_in_schema=False)
 def client_app():
-    return FileResponse(WEB_DIR / "index.html")
+    return FileResponse(WEB_DIR / "index.html", headers=NO_STORE_HEADERS)
 
 
 @app.get("/admin", include_in_schema=False)
 @app.get("/admin.html", include_in_schema=False)
 def admin_app():
-    return FileResponse(WEB_DIR / "admin.html")
+    return FileResponse(WEB_DIR / "admin.html", headers=NO_STORE_HEADERS)
 
 
 @app.get("/activate", include_in_schema=False)
 def activate_app():
-    return FileResponse(WEB_DIR / "activate.html")
+    return FileResponse(WEB_DIR / "activate.html", headers=NO_STORE_HEADERS)
 
 
 @app.get("/manifest.webmanifest", include_in_schema=False)
@@ -88,7 +93,11 @@ def manifest():
 
 @app.get("/sw.js", include_in_schema=False)
 def service_worker():
-    return FileResponse(WEB_DIR / "sw.js", media_type="application/javascript", headers={"Cache-Control": "no-cache"})
+    return FileResponse(
+        WEB_DIR / "sw.js",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @app.get("/icon.svg", include_in_schema=False)

@@ -1,1 +1,77 @@
-const CACHE='vera-shell-v1',SHELL=['/','/css/global.css','/js/client.js','/manifest.webmanifest','/icon.svg'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin||u.pathname.startsWith('/api/')||!SHELL.includes(u.pathname))return;e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request)))});self.addEventListener('push',e=>{let d={title:'VERA Lubricantes',body:'Tenés una novedad en VERA',url:'/'};try{d={...d,...e.data.json()}}catch{}e.waitUntil(self.registration.showNotification(d.title,{body:d.body,icon:'/icon.svg',badge:'/icon.svg',data:{url:d.url||'/'}}))});self.addEventListener('notificationclick',e=>{e.notification.close();const u=e.notification.data?.url||'/';e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(ws=>{for(const w of ws)if(w.url.startsWith(location.origin)){w.navigate(u);return w.focus()}return clients.openWindow(u)}))});
+const CACHE = 'vera-shell-v2';
+const SHELL = [
+  '/css/global.css',
+  '/js/client.js',
+  '/js/admin.js',
+  '/js/activate.js',
+  '/manifest.webmanifest',
+  '/icon.svg'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
+
+  if (!SHELL.includes(url.pathname)) return;
+
+  event.respondWith(
+    fetch(event.request, { cache: 'no-cache' })
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});
+
+self.addEventListener('push', event => {
+  let data = { title: 'VERA Lubricantes', body: 'Tenés una novedad en VERA', url: '/' };
+  try {
+    data = { ...data, ...event.data.json() };
+  } catch (_) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      data: { url: data.url || '/' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+      for (const windowClient of windows) {
+        if (windowClient.url.startsWith(self.location.origin)) {
+          windowClient.navigate(url);
+          return windowClient.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});
