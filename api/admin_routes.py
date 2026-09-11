@@ -294,7 +294,7 @@ def correct_service(service_id: UUID, payload: ServiceInput, admin: AdminContext
             (*[values.get(k) for k in SERVICE_COLUMNS], service_id),
         ).fetchone()
         conn.execute(
-            "insert into vera.service_corrections (service_id, corrected_by_admin_id, before_data, after_data) values (%s,%s,%s,%s)",
+            "insert into vera.service_corrections (service_id, changed_by_admin_id, before_data, after_data) values (%s,%s,%s,%s)",
             (service_id, admin.id, Jsonb(jsonable_encoder(before)), Jsonb(jsonable_encoder(after))),
         )
         conn.execute(
@@ -310,16 +310,22 @@ def correct_service(service_id: UUID, payload: ServiceInput, admin: AdminContext
 
 @router.post("/clients/{client_id}/access/qr")
 def access_qr(client_id: UUID, payload: AccessQrRequest, request: Request, admin: AdminContext = Depends(require_admin)):
-    purpose_map = {"activation": "initial", "pin_reset": "pin_reset", "relink": "relink"}
-    purpose = purpose_map[payload.purpose]
+    purpose = payload.purpose
     token = random_token()
-    token_hash = hash_token(token, "qr")
+    token_hash = hash_token(token, "access-qr")
     expires = utcnow() + timedelta(minutes=settings.qr_ttl_minutes)
     with connection() as conn:
         client = conn.execute("select full_name from vera.clients where id=%s", (client_id,)).fetchone()
         if not client:
             raise HTTPException(status_code=404, detail="Cliente no encontrado")
-        conn.execute("update vera.qr_tokens set invalidated_at=now() where client_id=%s and purpose=%s and used_at is null and invalidated_at is null", (client_id, purpose))
+        conn.execute(
+            "insert into vera.client_access (client_id) values (%s) on conflict (client_id) do nothing",
+            (client_id,),
+        )
+        conn.execute(
+            "delete from vera.qr_tokens where client_id=%s and purpose=%s and used_at is null",
+            (client_id, purpose),
+        )
         conn.execute(
             "insert into vera.qr_tokens (client_id, purpose, token_hash, expires_at, created_by_admin_id) values (%s,%s,%s,%s,%s)",
             (client_id, purpose, token_hash, expires, admin.id),
@@ -327,7 +333,8 @@ def access_qr(client_id: UUID, payload: AccessQrRequest, request: Request, admin
     base = settings.app_base_url or str(request.base_url).rstrip("/")
     url = f"{base}/activate?token={token}"
     image = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage)
-    buf = BytesIO(); image.save(buf)
+    buf = BytesIO()
+    image.save(buf)
     svg = base64.b64encode(buf.getvalue()).decode("ascii")
     return {"url": url, "qr": f"data:image/svg+xml;base64,{svg}", "expires_at": expires, "client_name": client["full_name"]}
 
@@ -370,7 +377,7 @@ def list_promotions(admin: AdminContext = Depends(require_admin)):
             """
             select p.id,p.title,p.detail,p.criterion_source,p.criterion_field,p.criterion_value,p.published_at,
                    (select count(*) from vera.messages m where m.promotion_id=p.id) as recipients
-            from vera.promotions p order by p.published_at desc nulls last, p.created_at desc
+            from vera.promotions p order by p.published_at desc nulls last
             """
         ).fetchall()
 
