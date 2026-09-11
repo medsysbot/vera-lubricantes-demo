@@ -1,4 +1,4 @@
-const state={me:null,vehicle:null,services:[]};
+const state={me:null,vehicle:null,services:[],messages:[]};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const UI=window.VeraUI;
 const icon=(name,cls='')=>UI?.icon(name,cls)||'';
@@ -125,12 +125,34 @@ function renderServiceDetail(s){
 }
 
 function messageLabel(type){return type==='promotion'?'Promoción':type==='reminder'?'Recordatorio':'Mensaje VERA'}
+function messageIcon(type){return type==='promotion'?'tag':type==='reminder'?'bell':'comments'}
+function renderMessageList(){
+  const ms=state.messages;
+  $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span><h3>${esc(m.title)}</h3><p>${esc(m.body)}</p><time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div><span class="message-chevron">${icon('chevron-right')}</span></article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
+}
+function renderMessageDetail(m){
+  if(!m){renderMessageList();return}
+  $('#message-list').innerHTML=`<button type="button" class="link-button" data-message-back>&larr; Volver a mensajes</button><article class="message-card"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span><h3>${esc(m.title)}</h3><p>${esc(m.body)}</p><time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div></article>`;
+  UI.decorateIcons(document);
+}
+async function openMessage(id){
+  const m=state.messages.find(item=>String(item.id)===String(id));
+  if(!m)return;
+  if(!m.is_read){
+    try{
+      await api(`/api/client/messages/${encodeURIComponent(m.id)}/read`,{method:'POST'});
+      m.is_read=true;
+      $('#message-badge').textContent=state.messages.filter(item=>!item.is_read).length;
+    }catch{}
+  }
+  renderMessageDetail(m);
+}
 async function loadMessages(){
   const loading=UI.notify('Actualizando mensajes...','loading',{title:'Mensajes VERA'});
   try{
-    const ms=await api('/api/client/messages');
-    $('#message-badge').textContent=ms.filter(m=>!m.is_read).length;
-    $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${m.message_type==='promotion'?icon('tag'):m.message_type==='reminder'?icon('bell'):icon('comments')}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span><h3>${esc(m.title)}</h3><p>${esc(m.body)}</p><time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div><span class="message-chevron">${icon('chevron-right')}</span></article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
+    state.messages=await api('/api/client/messages');
+    $('#message-badge').textContent=state.messages.filter(m=>!m.is_read).length;
+    renderMessageList();
   }finally{loading.close()}
 }
 
@@ -160,7 +182,7 @@ $('#client-login-form').addEventListener('submit',async e=>{
   finally{UI.setBusy(b,false)}
 });
 $('#forgot-pin').addEventListener('click',()=>$('#pin-help').classList.toggle('hidden'));
-$('#client-logout').addEventListener('click',async()=>{try{await api('/api/client/logout',{method:'POST'})}catch{}state.me=null;state.vehicle=null;state.services=[];showLogin()});
+$('#client-logout').addEventListener('click',async()=>{try{await api('/api/client/logout',{method:'POST'})}catch{}state.me=null;state.vehicle=null;state.services=[];state.messages=[];showLogin()});
 $('#enable-push').addEventListener('click',enablePush);
 
 document.addEventListener('click',async e=>{
@@ -169,7 +191,9 @@ document.addEventListener('click',async e=>{
   const s=e.target.closest('[data-service-index]');
   if(s){renderServiceDetail(state.services[Number(s.dataset.serviceIndex)]);showView('detail');return}
   const m=e.target.closest('[data-message-id]');
-  if(m&&m.classList.contains('unread')){try{await api(`/api/client/messages/${m.dataset.messageId}/read`,{method:'POST'});m.classList.remove('unread');const count=Math.max(0,Number($('#message-badge').textContent||0)-1);$('#message-badge').textContent=count}catch{}}
+  if(m){await openMessage(m.dataset.messageId);return}
+  const mb=e.target.closest('[data-message-back]');
+  if(mb){renderMessageList();return}
   const n=e.target.closest('[data-go]');if(!n)return;
   const target=n.dataset.go;
   if(target==='vehicles'){showView('vehicles');return}
