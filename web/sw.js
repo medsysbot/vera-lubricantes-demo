@@ -1,4 +1,4 @@
-const CACHE = 'vera-shell-v3';
+const CACHE = 'vera-shell-v4';
 const SHELL = [
   '/css/global.css',
   '/js/fa-solid-icons.js',
@@ -47,7 +47,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-  let data = { title: 'VERA Lubricantes', body: 'Tenés una novedad en VERA', url: '/' };
+  let data = { title: 'VERA Lubricantes', body: 'Tenés una novedad en VERA', url: '/cliente' };
   try {
     data = { ...data, ...event.data.json() };
   } catch (_) {}
@@ -57,14 +57,14 @@ self.addEventListener('push', event => {
       body: data.body,
       icon: '/icon.svg',
       badge: '/icon.svg',
-      data: { url: data.url || '/' }
+      data: { url: data.url || '/cliente' }
     })
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = event.notification.data?.url || '/';
+  const url = event.notification.data?.url || '/cliente';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
       for (const windowClient of windows) {
