@@ -29,11 +29,19 @@ SERVICE_COLUMNS = [
 
 
 def ensure_bootstrap_admin() -> None:
-    if not settings.database_url or not settings.admin_username or not settings.admin_password:
+    if not settings.database_url:
         return
     with connection() as conn:
         exists = conn.execute("select id from vera.admins limit 1").fetchone()
         if exists:
+            return
+        if not settings.auth_enabled:
+            conn.execute(
+                "insert into vera.admins (username, display_name, password_hash) values (%s, %s, %s)",
+                ("development", settings.admin_display_name, hash_password(random_token())),
+            )
+            return
+        if not settings.admin_username or not settings.admin_password:
             return
         conn.execute(
             "insert into vera.admins (username, display_name, password_hash) values (%s, %s, %s)",
@@ -43,6 +51,8 @@ def ensure_bootstrap_admin() -> None:
 
 @router.post("/login")
 def login(payload: AdminLogin, response: Response):
+    if not settings.auth_enabled:
+        return {"ok": True, "development": True}
     with connection() as conn:
         admin = conn.execute(
             "select id, username, display_name, password_hash from vera.admins where lower(username)=lower(%s) and is_active=true",
@@ -63,6 +73,8 @@ def login(payload: AdminLogin, response: Response):
 
 @router.post("/logout")
 def logout(request: Request, response: Response, admin: AdminContext = Depends(require_admin)):
+    if not settings.auth_enabled:
+        return {"ok": True, "development": True}
     token = request.cookies.get(ADMIN_COOKIE)
     if token:
         with connection() as conn:
@@ -139,57 +151,59 @@ def create_client(payload: ClientCreate, admin: AdminContext = Depends(require_a
                 values (%s,%s,%s,%s,%s,%s,%s,%s)
                 returning id, plate, brand, model, description, year, current_mileage
                 """,
-                (client["id"], v.plate.strip(), _clean(v.brand), v.model.strip(), _clean(v.description), v.year, v.current_mileage, admin.id),
+                (
+                    client["id"], v.plate.strip().upper(), v.brand, v.model.strip(), v.description,
+                    v.year, v.current_mileage, admin.id,
+                ),
             ).fetchone()
-            conn.execute("insert into vera.client_access (client_id) values (%s)", (client["id"],))
             conn.execute(
-                "insert into vera.admin_activity (admin_id, client_id, vehicle_id, action_type, description, reference) values (%s,%s,%s,'client_created','Cliente y vehiculo registrados',%s)",
-                (admin.id, client["id"], vehicle["id"], vehicle["plate"]),
+                "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+                (admin.id, "client_created", f"Cliente creado: {client['full_name']}", vehicle["plate"]),
             )
         return {"client": client, "vehicle": vehicle}
     except Exception as exc:
-        if "vehicles_plate_normalized_uq" in str(exc):
+        if "vehicles_plate_key" in str(exc) or "unique" in str(exc).lower():
             raise HTTPException(status_code=409, detail="La patente ya esta registrada") from exc
         raise
 
 
+@router.delete("/clients/{client_id}", status_code=204)
+def delete_client(client_id: UUID, admin: AdminContext = Depends(require_admin)):
+    with connection() as conn:
+        row = conn.execute("delete from vera.clients where id=%s returning full_name", (client_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        conn.execute(
+            "insert into vera.admin_activity (admin_id, action_type, description) values (%s,%s,%s)",
+            (admin.id, "client_deleted", f"Cliente eliminado: {row['full_name']}"),
+        )
+    return Response(status_code=204)
+
+
 @router.post("/clients/{client_id}/vehicles", status_code=201)
 def add_vehicle(client_id: UUID, payload: VehicleInput, admin: AdminContext = Depends(require_admin)):
-    try:
-        with connection() as conn:
-            client = conn.execute("select id from vera.clients where id=%s", (client_id,)).fetchone()
-            if not client:
-                raise HTTPException(status_code=404, detail="Cliente no encontrado")
-            vehicle = conn.execute(
+    with connection() as conn:
+        client = conn.execute("select id from vera.clients where id=%s", (client_id,)).fetchone()
+        if not client:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        try:
+            row = conn.execute(
                 """
                 insert into vera.vehicles (client_id, plate, brand, model, description, year, current_mileage, created_by_admin_id)
                 values (%s,%s,%s,%s,%s,%s,%s,%s)
                 returning id, plate, brand, model, description, year, current_mileage
                 """,
-                (client_id, payload.plate.strip(), _clean(payload.brand), payload.model.strip(), _clean(payload.description), payload.year, payload.current_mileage, admin.id),
+                (client_id, payload.plate.strip().upper(), payload.brand, payload.model.strip(), payload.description, payload.year, payload.current_mileage, admin.id),
             ).fetchone()
-            conn.execute(
-                "insert into vera.admin_activity (admin_id, client_id, vehicle_id, action_type, description, reference) values (%s,%s,%s,'vehicle_created','Vehiculo agregado al cliente',%s)",
-                (admin.id, client_id, vehicle["id"], vehicle["plate"]),
-            )
-        return vehicle
-    except Exception as exc:
-        if "vehicles_plate_normalized_uq" in str(exc):
-            raise HTTPException(status_code=409, detail="La patente ya esta registrada") from exc
-        raise
-
-
-@router.delete("/clients/{client_id}")
-def delete_client(client_id: UUID, admin: AdminContext = Depends(require_admin)):
-    with connection() as conn:
-        deleted = conn.execute("delete from vera.clients where id=%s returning id", (client_id,)).fetchone()
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        except Exception as exc:
+            if "unique" in str(exc).lower():
+                raise HTTPException(status_code=409, detail="La patente ya esta registrada") from exc
+            raise
         conn.execute(
-            "insert into vera.admin_activity (admin_id, action_type, description) values (%s,'client_deleted','Cliente eliminado completamente')",
-            (admin.id,),
+            "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+            (admin.id, "vehicle_created", f"Vehiculo agregado: {row['plate']}", row["plate"]),
         )
-    return {"ok": True}
+    return row
 
 
 @router.get("/vehicles")
@@ -197,23 +211,25 @@ def list_vehicles(search: str = "", admin: AdminContext = Depends(require_admin)
     term = search.strip()
     pattern = f"%{term}%"
     with connection() as conn:
-        rows = conn.execute(
+        return conn.execute(
             """
             select v.id, v.client_id, v.plate, v.brand, v.model, v.description, v.year, v.current_mileage,
                    c.full_name as client_name, c.phone,
-                   (select max(service_date) from vera.services s where s.vehicle_id=v.id) as last_service_date
+                   ls.service_date as last_service_date, ls.mileage as last_service_mileage
             from vera.vehicles v join vera.clients c on c.id=v.client_id
+            left join lateral (
+                select service_date, mileage from vera.services s where s.vehicle_id=v.id
+                order by service_date desc, created_at desc limit 1
+            ) ls on true
             where (%s='' or v.plate ilike %s or v.model ilike %s or c.full_name ilike %s)
-            order by v.updated_at desc
-            limit 250
+            order by v.plate limit 300
             """,
             (term, pattern, pattern, pattern),
         ).fetchall()
-    return rows
 
 
 @router.get("/vehicles/{vehicle_id}")
-def get_vehicle(vehicle_id: UUID, admin: AdminContext = Depends(require_admin)):
+def vehicle_detail(vehicle_id: UUID, admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
         vehicle = conn.execute(
             """
@@ -231,218 +247,170 @@ def get_vehicle(vehicle_id: UUID, admin: AdminContext = Depends(require_admin)):
     return {"vehicle": vehicle, "services": services}
 
 
-@router.delete("/vehicles/{vehicle_id}")
+@router.delete("/vehicles/{vehicle_id}", status_code=204)
 def delete_vehicle(vehicle_id: UUID, admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
-        row = conn.execute("select client_id, plate from vera.vehicles where id=%s", (vehicle_id,)).fetchone()
+        row = conn.execute("delete from vera.vehicles where id=%s returning plate", (vehicle_id,)).fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Vehiculo no encontrado")
-        conn.execute("delete from vera.vehicles where id=%s", (vehicle_id,))
         conn.execute(
-            "insert into vera.admin_activity (admin_id, client_id, action_type, description) values (%s,%s,'vehicle_deleted','Vehiculo e historial eliminados')",
-            (admin.id, row["client_id"]),
+            "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+            (admin.id, "vehicle_deleted", f"Vehiculo eliminado: {row['plate']}", row["plate"]),
         )
-    return {"ok": True}
+    return Response(status_code=204)
 
 
 @router.post("/vehicles/{vehicle_id}/services", status_code=201)
 def create_service(vehicle_id: UUID, payload: ServiceInput, admin: AdminContext = Depends(require_admin)):
-    values = _service_values(payload)
+    values = payload.model_dump()
     with connection() as conn:
-        vehicle = conn.execute("select client_id, plate from vera.vehicles where id=%s", (vehicle_id,)).fetchone()
+        vehicle = conn.execute("select id, plate from vera.vehicles where id=%s", (vehicle_id,)).fetchone()
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehiculo no encontrado")
+        cols = ",".join(SERVICE_COLUMNS)
         placeholders = ",".join(["%s"] * len(SERVICE_COLUMNS))
-        columns = ",".join(SERVICE_COLUMNS)
-        service = conn.execute(
-            f"insert into vera.services (vehicle_id,{columns},created_by_admin_id) values (%s,{placeholders},%s) returning *",
-            (vehicle_id, *values, admin.id),
+        row = conn.execute(
+            f"insert into vera.services (vehicle_id, created_by_admin_id, {cols}) values (%s,%s,{placeholders}) returning *",
+            (vehicle_id, admin.id, *[values.get(k) for k in SERVICE_COLUMNS]),
         ).fetchone()
-        conn.execute("update vera.vehicles set current_mileage=%s where id=%s", (payload.mileage, vehicle_id))
+        conn.execute("update vera.vehicles set current_mileage=%s, updated_at=now() where id=%s", (payload.mileage, vehicle_id))
         conn.execute(
-            "insert into vera.admin_activity (admin_id, client_id, vehicle_id, service_id, action_type, description, reference) values (%s,%s,%s,%s,'service_created','Nuevo servicio registrado',%s)",
-            (admin.id, vehicle["client_id"], vehicle_id, service["id"], vehicle["plate"]),
+            "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+            (admin.id, "service_created", f"Servicio registrado para {vehicle['plate']}", vehicle["plate"]),
         )
-    return service
+    return row
 
 
 @router.put("/services/{service_id}")
 def correct_service(service_id: UUID, payload: ServiceInput, admin: AdminContext = Depends(require_admin)):
-    values = _service_values(payload)
+    values = payload.model_dump()
     with connection() as conn:
-        old = conn.execute("select * from vera.services where id=%s for update", (service_id,)).fetchone()
-        if not old:
+        before = conn.execute("select * from vera.services where id=%s for update", (service_id,)).fetchone()
+        if not before:
             raise HTTPException(status_code=404, detail="Servicio no encontrado")
-        assignments = ",".join(f"{column}=%s" for column in SERVICE_COLUMNS)
-        new = conn.execute(
-            f"update vera.services set {assignments} where id=%s returning *",
-            (*values, service_id),
+        set_sql = ",".join([f"{c}=%s" for c in SERVICE_COLUMNS])
+        after = conn.execute(
+            f"update vera.services set {set_sql}, updated_at=now() where id=%s returning *",
+            (*[values.get(k) for k in SERVICE_COLUMNS], service_id),
         ).fetchone()
-        before = {k: old[k] for k in SERVICE_COLUMNS}
-        after = {k: new[k] for k in SERVICE_COLUMNS}
-        if before != after:
-            conn.execute(
-                "insert into vera.service_corrections (service_id, changed_by_admin_id, before_data, after_data) values (%s,%s,%s,%s)",
-                (service_id, admin.id, Jsonb(jsonable_encoder(before)), Jsonb(jsonable_encoder(after))),
-            )
-            conn.execute(
-                "insert into vera.admin_activity (admin_id, vehicle_id, service_id, action_type, description) values (%s,%s,%s,'service_corrected','Servicio corregido')",
-                (admin.id, old["vehicle_id"], service_id),
-            )
-        latest = conn.execute(
-            "select mileage from vera.services where vehicle_id=%s order by service_date desc, created_at desc limit 1",
-            (old["vehicle_id"],),
-        ).fetchone()
-        if latest:
-            conn.execute("update vera.vehicles set current_mileage=%s where id=%s", (latest["mileage"], old["vehicle_id"]))
-    return new
+        conn.execute(
+            "insert into vera.service_corrections (service_id, corrected_by_admin_id, before_data, after_data) values (%s,%s,%s,%s)",
+            (service_id, admin.id, Jsonb(jsonable_encoder(before)), Jsonb(jsonable_encoder(after))),
+        )
+        conn.execute(
+            "update vera.vehicles set current_mileage=%s, updated_at=now() where id=%s",
+            (payload.mileage, before["vehicle_id"]),
+        )
+        conn.execute(
+            "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+            (admin.id, "service_corrected", "Servicio corregido", str(service_id)),
+        )
+    return after
 
 
 @router.post("/clients/{client_id}/access/qr")
-def create_access_qr(client_id: UUID, payload: AccessQrRequest, request: Request, admin: AdminContext = Depends(require_admin)):
-    raw = random_token()
-    token_hash = hash_token(raw, "access-qr")
+def access_qr(client_id: UUID, payload: AccessQrRequest, request: Request, admin: AdminContext = Depends(require_admin)):
+    purpose_map = {"activation": "initial", "pin_reset": "pin_reset", "relink": "relink"}
+    purpose = purpose_map[payload.purpose]
+    token = random_token()
+    token_hash = hash_token(token, "qr")
     expires = utcnow() + timedelta(minutes=settings.qr_ttl_minutes)
     with connection() as conn:
-        client = conn.execute("select id, full_name from vera.clients where id=%s", (client_id,)).fetchone()
+        client = conn.execute("select full_name from vera.clients where id=%s", (client_id,)).fetchone()
         if not client:
             raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        conn.execute("update vera.qr_tokens set invalidated_at=now() where client_id=%s and purpose=%s and used_at is null and invalidated_at is null", (client_id, purpose))
         conn.execute(
-            "update vera.qr_tokens set used_at=now() where client_id=%s and purpose=%s and used_at is null",
-            (client_id, payload.purpose),
+            "insert into vera.qr_tokens (client_id, purpose, token_hash, expires_at, created_by_admin_id) values (%s,%s,%s,%s,%s)",
+            (client_id, purpose, token_hash, expires, admin.id),
         )
-        conn.execute(
-            "insert into vera.qr_tokens (client_id, purpose, token_hash, created_by_admin_id, expires_at) values (%s,%s,%s,%s,%s)",
-            (client_id, payload.purpose, token_hash, admin.id, expires),
-        )
-    base = (settings.app_base_url or str(request.base_url)).rstrip("/")
-    url = f"{base}/activate?token={raw}"
-    factory = qrcode.image.svg.SvgPathImage
-    image = qrcode.make(url, image_factory=factory, box_size=8, border=2)
-    buf = BytesIO()
-    image.save(buf)
-    data_url = "data:image/svg+xml;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
-    return {"client_name": client["full_name"], "purpose": payload.purpose, "expires_at": expires, "url": url, "qr": data_url}
+    base = settings.app_base_url or str(request.base_url).rstrip("/")
+    url = f"{base}/activate?token={token}"
+    image = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage)
+    buf = BytesIO(); image.save(buf)
+    svg = base64.b64encode(buf.getvalue()).decode("ascii")
+    return {"url": url, "qr": f"data:image/svg+xml;base64,{svg}", "expires_at": expires, "client_name": client["full_name"]}
 
 
 @router.post("/promotions/preview")
-def preview_promotion(payload: PromotionInput, admin: AdminContext = Depends(require_admin)):
-    matches = _promotion_matches(payload)
-    return {"matches": matches, "count": len(matches)}
+def promotion_preview(payload: PromotionInput, admin: AdminContext = Depends(require_admin)):
+    ids = _promotion_clients(payload)
+    return {"count": len(ids)}
 
 
 @router.post("/promotions", status_code=201)
 def publish_promotion(payload: PromotionInput, admin: AdminContext = Depends(require_admin)):
-    matches = _promotion_matches(payload)
+    client_ids = _promotion_clients(payload)
     with connection() as conn:
-        promo = conn.execute(
-            """
-            insert into vera.promotions (title, detail, criterion_source, criterion_field, criterion_value, created_by_admin_id)
-            values (%s,%s,%s,%s,%s,%s) returning *
-            """,
+        promotion = conn.execute(
+            "insert into vera.promotions (title, detail, criterion_source, criterion_field, criterion_value, created_by_admin_id, published_at) values (%s,%s,%s,%s,%s,%s,now()) returning id, title, published_at",
             (payload.title.strip(), payload.detail.strip(), payload.criterion_source, payload.criterion_field, payload.criterion_value.strip(), admin.id),
         ).fetchone()
-        for match in matches:
+        for client_id in client_ids:
             conn.execute(
-                """
-                insert into vera.messages (client_id, vehicle_id, promotion_id, message_type, title, body)
-                values (%s,%s,%s,'promotion',%s,%s)
-                on conflict (promotion_id, client_id) where promotion_id is not null do nothing
-                """,
-                (match["client_id"], match["vehicle_id"], promo["id"], promo["title"], promo["detail"]),
+                "insert into vera.messages (client_id, message_type, title, body, promotion_id) values (%s,'promotion',%s,%s,%s) on conflict do nothing",
+                (client_id, payload.title.strip(), payload.detail.strip(), promotion["id"]),
             )
+        subscriptions = conn.execute(
+            "select endpoint,p256dh,auth from vera.push_subscriptions where client_id=any(%s)",
+            (client_ids,),
+        ).fetchall() if client_ids else []
         conn.execute(
-            "insert into vera.admin_activity (admin_id, promotion_id, action_type, description, reference) values (%s,%s,'promotion_published','Promocion publicada',%s)",
-            (admin.id, promo["id"], promo["title"]),
+            "insert into vera.admin_activity (admin_id, action_type, description, reference) values (%s,%s,%s,%s)",
+            (admin.id, "promotion_published", f"Promocion publicada: {promotion['title']}", str(promotion["id"])),
         )
-    for match in matches:
-        _push_client(match["client_id"], {"title": payload.title, "body": payload.detail, "url": "/"})
-    return {"promotion": promo, "recipients": len(matches)}
+    sent = sum(1 for s in subscriptions if send_push(s, {"title": payload.title, "body": payload.detail, "url": "/"}))
+    return {"promotion": promotion, "recipients": len(client_ids), "push_sent": sent}
 
 
 @router.get("/promotions")
 def list_promotions(admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
-        rows = conn.execute(
-            "select p.*, (select count(*) from vera.messages m where m.promotion_id=p.id) as recipients from vera.promotions p order by published_at desc limit 100"
+        return conn.execute(
+            """
+            select p.id,p.title,p.detail,p.criterion_source,p.criterion_field,p.criterion_value,p.published_at,
+                   (select count(*) from vera.messages m where m.promotion_id=p.id) as recipients
+            from vera.promotions p order by p.published_at desc nulls last, p.created_at desc
+            """
         ).fetchall()
-    return rows
 
 
 @router.get("/messages")
-def list_messages(admin: AdminContext = Depends(require_admin)):
+def admin_messages(admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
-        rows = conn.execute(
+        return conn.execute(
             """
-            select m.id, m.message_type, m.title, m.body, m.is_read, m.created_at, m.read_at,
+            select m.id,m.message_type,m.title,m.body,m.is_read,m.created_at,m.read_at,
                    c.full_name as client_name, v.plate
-            from vera.messages m
-            join vera.clients c on c.id=m.client_id
+            from vera.messages m join vera.clients c on c.id=m.client_id
             left join vera.vehicles v on v.id=m.vehicle_id
             order by m.created_at desc limit 300
             """
         ).fetchall()
-    return rows
 
 
 @router.get("/reminders")
-def list_reminders(admin: AdminContext = Depends(require_admin)):
+def reminders(admin: AdminContext = Depends(require_admin)):
     with connection() as conn:
-        rows = conn.execute(
+        return conn.execute(
             """
-            select r.*, v.plate, v.model, c.full_name as client_name
-            from vera.reminders r
-            join vera.vehicles v on v.id=r.vehicle_id
-            join vera.clients c on c.id=v.client_id
-            order by r.notify_at desc limit 200
+            select r.id,r.due_date,r.notify_at,r.status,r.sent_at,v.plate,v.model,c.full_name as client_name
+            from vera.reminders r join vera.vehicles v on v.id=r.vehicle_id join vera.clients c on c.id=v.client_id
+            order by coalesce(r.notify_at, r.due_date::timestamptz) nulls last
             """
         ).fetchall()
-    return rows
 
 
-def _service_values(payload: ServiceInput) -> tuple:
-    data = payload.model_dump()
-    return tuple(_clean(data[column]) if isinstance(data[column], str) else data[column] for column in SERVICE_COLUMNS)
-
-
-def _clean(value: str | None) -> str | None:
-    if value is None:
-        return None
-    cleaned = value.strip()
-    return cleaned or None
-
-
-def _promotion_matches(payload: PromotionInput) -> list[dict]:
-    value = payload.criterion_value.strip()
-    if payload.criterion_source == "vehicle" and payload.criterion_field == "model":
-        sql = """
-            select distinct on (c.id) c.id as client_id, c.full_name as client_name,
-                   v.id as vehicle_id, v.plate, v.model
-            from vera.clients c join vera.vehicles v on v.client_id=c.id
-            where v.model ilike %s
-            order by c.id, v.updated_at desc
-        """
-    elif payload.criterion_source == "service" and payload.criterion_field == "oil":
-        sql = """
-            select distinct on (c.id) c.id as client_id, c.full_name as client_name,
-                   v.id as vehicle_id, v.plate, v.model
-            from vera.clients c
-            join vera.vehicles v on v.client_id=c.id
-            join vera.services s on s.vehicle_id=v.id
-            where s.oil ilike %s
-            order by c.id, s.service_date desc, s.created_at desc
-        """
-    else:
-        raise HTTPException(status_code=400, detail="Criterio de promocion no aprobado")
+def _promotion_clients(payload: PromotionInput) -> list[UUID]:
+    value = f"%{payload.criterion_value.strip()}%"
     with connection() as conn:
-        return conn.execute(sql, (f"%{value}%",)).fetchall()
-
-
-def _push_client(client_id: UUID, payload: dict) -> None:
-    with connection() as conn:
-        subscription = conn.execute(
-            "select endpoint, p256dh, auth from vera.push_subscriptions where client_id=%s",
-            (client_id,),
-        ).fetchone()
-    if subscription:
-        send_push(subscription, payload)
+        if payload.criterion_source == "vehicle" and payload.criterion_field == "model":
+            rows = conn.execute("select distinct client_id from vera.vehicles where model ilike %s", (value,)).fetchall()
+        elif payload.criterion_source == "service" and payload.criterion_field == "oil":
+            rows = conn.execute(
+                "select distinct v.client_id from vera.services s join vera.vehicles v on v.id=s.vehicle_id where s.oil ilike %s",
+                (value,),
+            ).fetchall()
+        else:
+            raise HTTPException(status_code=400, detail="Criterio de promocion no aprobado")
+    return [r["client_id"] for r in rows]
