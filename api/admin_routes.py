@@ -108,7 +108,8 @@ def dashboard(admin: AdminContext = Depends(require_admin)):
               (select count(*) from vera.vehicles) as vehicles,
               (select count(*) from vera.services where date_trunc('month', service_date)=date_trunc('month', current_date)) as services_month,
               (select count(*) from vera.promotions where deleted_at is null) as promotions,
-              (select count(*) from vera.reminders where status='pending') as reminders
+              (select count(*) from vera.reminders where status='pending') as reminders,
+              (select count(*) from vera.messages where is_read=false and client_deleted_at is null) as unread_messages
             """
         ).fetchone()
         activity = conn.execute(

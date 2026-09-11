@@ -194,9 +194,10 @@
     async function dashboard(){
       const x = await api('/api/admin/dashboard'), c = x.counts;
       const kpis = [
-        ['Clientes',c.clients,'users'],['Vehículos',c.vehicles,'car'],['Servicios del mes',c.services_month,'wrench'],['Promociones',c.promotions,'tags'],['Recordatorios',c.reminders,'bell']
+        ['Clientes',c.clients,'users'],['Vehículos',c.vehicles,'car'],['Servicios del mes',c.services_month,'wrench'],['Promociones',c.promotions,'tags'],['Recordatorios',c.reminders,'bell'],
+        ['Mensajes no leídos',c.unread_messages,'comments','Pendientes de lectura por los clientes']
       ];
-      $('#dashboard-kpis').innerHTML = kpis.map(([l,v,i]) => `<article class="kpi-card glass-card"><span class="kpi-accent">${icon(i)}</span><strong>${v}</strong><span>${l}</span></article>`).join('');
+      $('#dashboard-kpis').innerHTML = kpis.map(([l,v,i,description]) => `<article class="kpi-card glass-card"${description?` title="${esc(description)}"`:''}><span class="kpi-accent">${icon(i)}</span><strong>${v}</strong><span>${l}</span></article>`).join('');
     }
 
     async function searchDashboardClient() {
