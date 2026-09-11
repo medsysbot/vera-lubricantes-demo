@@ -34,6 +34,23 @@ async function syncPushCard(){
     }
   }catch{setPushCardHidden(false)}
 }
+async function syncSystemUnread(count){
+  const unread=Math.max(0,Number(count)||0);
+  if(unread>0){
+    if('setAppBadge'in navigator){try{await navigator.setAppBadge(unread)}catch{}}
+    return;
+  }
+  if('serviceWorker'in navigator){
+    try{
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg){
+        const notifications=await reg.getNotifications();
+        notifications.forEach(notification=>notification.close());
+      }
+    }catch{}
+  }
+  if('clearAppBadge'in navigator){try{await navigator.clearAppBadge()}catch{}}
+}
 
 function showMain(){
   $('#login-view').classList.remove('active');
@@ -58,6 +75,7 @@ async function loadMe(){
   state.me=await api('/api/client/me');
   $('#client-greeting').textContent=`${state.me.full_name} · ${state.me.phone}`;
   $('#message-badge').textContent=state.me.unread_messages||0;
+  void syncSystemUnread(state.me.unread_messages||0);
   renderVehicles();
 }
 
@@ -142,7 +160,10 @@ async function openMessage(id){
     try{
       await api(`/api/client/messages/${encodeURIComponent(m.id)}/read`,{method:'POST'});
       m.is_read=true;
-      $('#message-badge').textContent=state.messages.filter(item=>!item.is_read).length;
+      const unread=state.messages.filter(item=>!item.is_read).length;
+      $('#message-badge').textContent=unread;
+      if(state.me)state.me.unread_messages=unread;
+      void syncSystemUnread(unread);
     }catch{}
   }
   renderMessageDetail(m);
@@ -151,7 +172,10 @@ async function loadMessages(){
   const loading=UI.notify('Actualizando mensajes...','loading',{title:'Mensajes VERA'});
   try{
     state.messages=await api('/api/client/messages');
-    $('#message-badge').textContent=state.messages.filter(m=>!m.is_read).length;
+    const unread=state.messages.filter(m=>!m.is_read).length;
+    $('#message-badge').textContent=unread;
+    if(state.me)state.me.unread_messages=unread;
+    void syncSystemUnread(unread);
     renderMessageList();
   }finally{loading.close()}
 }
