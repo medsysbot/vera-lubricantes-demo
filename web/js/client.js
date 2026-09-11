@@ -145,16 +145,19 @@ function renderServiceDetail(s){
 
 function messageLabel(type){return type==='promotion'?'Promoción':type==='reminder'?'Recordatorio':'Mensaje VERA'}
 function messageIcon(type){return type==='promotion'?'tag':type==='reminder'?'bell':'comments'}
-function promotionItem(m){return m.message_type==='promotion'&&m.promotion_item?`<p><strong>Ítem o condición:</strong> ${esc(m.promotion_item)}</p>`:''}
+function promotionContent(m,detail=false){
+  if(m.message_type!=='promotion')return `<h3>${esc(m.title)}</h3><p>${esc(m.body)}</p>`;
+  const item=m.promotion_item?`<div class="promotion-item">${esc(m.promotion_item)}</div>`:'';
+  return `${item}<div class="promotion-title">${esc(m.title)}</div><p class="promotion-detail">${esc(m.body)}</p>`;
+}
 function renderMessageList(){
   const ms=state.messages;
-  $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${promotionItem(m)}<h3>${esc(m.title)}</h3><p>${esc(m.body)}</p><time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div><span class="message-chevron">${icon('chevron-right')}</span></article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
+  $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${promotionContent(m)}</div><span class="message-chevron">${icon('chevron-right')}</span></article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
   UI.decorateIcons(document);
 }
 function renderMessageDetail(m){
   if(!m){renderMessageList();return}
-  const content=m.message_type==='promotion'?`<p><strong>Ítem o condición:</strong> ${esc(m.promotion_item||'—')}</p><p><strong>Producto / rubro / título:</strong></p><h3>${esc(m.title)}</h3><p><strong>Detalle:</strong> ${esc(m.body)}</p>`:`<h3>${esc(m.title)}</h3><p>${esc(m.body)}</p>`;
-  $('#message-list').innerHTML=`<button type="button" class="link-button" data-message-back>&larr; Volver a mensajes</button><article class="message-card"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${content}<time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div></article>`;
+  $('#message-list').innerHTML=`<button type="button" class="link-button" data-message-back>&larr; Volver a mensajes</button><article class="message-card message-detail-card"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${promotionContent(m,true)}<time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div></article>`;
   UI.decorateIcons(document);
 }
 function updateUnreadState(){
