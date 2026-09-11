@@ -7,6 +7,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Settings:
     app_env: str
+    auth_enabled: bool
     database_url: str
     app_secret: str
     admin_username: str | None
@@ -26,6 +27,7 @@ class Settings:
     def from_env(cls) -> "Settings":
         return cls(
             app_env=os.getenv("APP_ENV", "production").strip() or "production",
+            auth_enabled=_bool("AUTH_ENABLED", False),
             database_url=os.getenv("DATABASE_URL", "").strip(),
             app_secret=os.getenv("APP_SECRET", "").strip(),
             admin_username=_optional("ADMIN_USERNAME"),
@@ -60,6 +62,17 @@ class Settings:
 def _optional(name: str) -> str | None:
     value = os.getenv(name, "").strip()
     return value or None
+
+
+def _bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    raise RuntimeError(f"{name} debe ser true o false")
 
 
 def _positive_int(name: str, default: int) -> int:
