@@ -1,8 +1,8 @@
-const CACHE = 'vera-shell-v9';
+const CACHE = 'vera-shell-v10';
 const SHELL = [
   '/css/global.css',
   '/css/client.css',
-  '/css/client.css?v=20260911-ficha',
+  '/css/client.css?v=20260911-tarjetas',
   '/css/messages.css',
   '/images/vera-lubricentro.webp',
   '/images/vera-lubricentro-vertical.webp',
