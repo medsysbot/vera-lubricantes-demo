@@ -1,4 +1,4 @@
-const CACHE = 'vera-shell-v4';
+const CACHE = 'vera-shell-v5';
 const SHELL = [
   '/css/global.css',
   '/js/fa-solid-icons.js',
@@ -7,7 +7,9 @@ const SHELL = [
   '/js/admin.js',
   '/js/activate.js',
   '/manifest.webmanifest',
-  '/icon.svg'
+  '/icon.svg',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -55,8 +57,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icon.svg',
-      badge: '/icon.svg',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       data: { url: data.url || '/cliente' }
     })
   );

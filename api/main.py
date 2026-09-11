@@ -101,3 +101,13 @@ def service_worker():
 @app.get("/icon.svg", include_in_schema=False)
 def icon():
     return FileResponse(WEB_DIR / "icon.svg", media_type="image/svg+xml")
+
+
+@app.get("/icon-192.png", include_in_schema=False)
+def icon_192():
+    return FileResponse(WEB_DIR / "icon-192.png", media_type="image/png")
+
+
+@app.get("/icon-512.png", include_in_schema=False)
+def icon_512():
+    return FileResponse(WEB_DIR / "icon-512.png", media_type="image/png")
