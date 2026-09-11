@@ -12,11 +12,26 @@
       .admin-body .admin-nav button{display:flex;align-items:center;gap:13px;padding-left:16px}.admin-body .admin-nav button:before{display:none!important}.admin-body .nav-icon{display:grid;place-items:center;width:18px;color:#8190a0;font-size:.95rem}.admin-body .admin-nav button.active .nav-icon{color:#efc778}.admin-body .action-icon .fa-svg{width:1.05em;height:1.05em}.admin-body .search-icon{display:grid;place-items:center}.admin-body .btn .fa-svg,.admin-body .record-actions .fa-svg{width:.95em;height:.95em}
       #new-client-form:not(.hidden)+#client-results>.notice{display:none!important}
       .client-body .personal-card{display:none!important}
-      .vera-toast-host{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;pointer-events:none;padding:24px;background:rgba(0,0,0,.18);backdrop-filter:blur(1.5px)}
-      .vera-toast-host:empty{display:none}.vera-toast{pointer-events:auto;width:min(92vw,520px);display:grid;grid-template-columns:64px 1fr 30px;gap:18px;align-items:center;padding:24px 22px;border:1px solid rgba(217,162,76,.38);border-radius:18px;background:linear-gradient(145deg,rgba(13,29,43,.99),rgba(4,13,22,.995));color:#f6f3ec;box-shadow:0 30px 90px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.035);animation:vera-toast-in .2s ease-out}
-      .vera-toast-icon{display:grid;place-items:center;width:60px;height:60px;border:1px solid rgba(217,162,76,.46);border-radius:50%;color:#efc778;background:rgba(217,162,76,.08);font-size:1.65rem}.vera-toast-success .vera-toast-icon{color:#78dbae;border-color:rgba(43,200,138,.4);background:rgba(43,200,138,.1)}.vera-toast-error .vera-toast-icon{color:#ff8e98;border-color:rgba(217,47,61,.48);background:rgba(217,47,61,.12)}.vera-toast-warning .vera-toast-icon{color:#f0c775}.vera-toast-copy strong,.vera-toast-copy span{display:block}.vera-toast-copy strong{font-family:Georgia,"Times New Roman",serif;font-size:1.35rem;font-weight:500}.vera-toast-copy span{margin-top:6px;color:#b4bdc6;font-size:.92rem;line-height:1.5}.vera-toast-close{align-self:start;border:0;background:transparent;color:#8b98a5;font-size:1.3rem;cursor:pointer;padding:0}.vera-toast.is-leaving{opacity:0;transform:scale(.97);transition:.18s}
-      .vera-confirm{width:min(92vw,540px);border:1px solid rgba(217,162,76,.4);border-radius:19px;color:#f6f3ec;background:linear-gradient(145deg,#0d1d2b,#050f19);padding:28px;box-shadow:0 35px 100px rgba(0,0,0,.68)}.vera-confirm::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(5px)}.vera-confirm-icon{display:grid;place-items:center;width:66px;height:66px;border:1px solid rgba(217,162,76,.48);border-radius:50%;color:#efc778;margin:0 auto 18px;font-size:1.75rem;background:rgba(217,162,76,.06)}.vera-confirm-copy{text-align:center}.vera-confirm .eyebrow{margin-bottom:8px}.vera-confirm h2{margin:0 0 9px;font-size:1.8rem}.vera-confirm-message{margin:0 auto;color:#aeb8c2;font-size:.94rem;line-height:1.55;max-width:440px}.vera-confirm-actions{display:flex;justify-content:center;gap:12px;margin-top:24px}.vera-confirm-actions .btn{min-width:145px}.vera-confirm-accept.danger{background:#8f2630;border-color:#c64a56;color:#fff}.is-busy{pointer-events:none;opacity:.78}@keyframes vera-toast-in{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
-      @media(max-width:560px){.vera-toast{grid-template-columns:52px 1fr 22px;padding:20px 17px;gap:13px}.vera-toast-icon{width:50px;height:50px;font-size:1.35rem}.vera-toast-copy strong{font-size:1.16rem}.vera-toast-copy span{font-size:.84rem}.vera-confirm{padding:24px 18px}.vera-confirm-actions{display:grid}.vera-confirm-actions .btn{width:100%}}
+
+      .vera-toast-host{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;pointer-events:none;padding:24px}
+      .vera-toast-host:empty{display:none}
+      .vera-toast{width:min(88vw,560px);display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:18px;padding:28px 30px;border:0;border-radius:14px;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);color:#fff;box-shadow:0 20px 55px rgba(0,0,0,.35);animation:vera-toast-in .18s ease-out}
+      .vera-toast-icon{display:grid;place-items:center;width:52px;height:52px;color:#efc778;font-size:1.8rem}
+      .vera-toast-message{display:block;color:#fff;font-family:var(--sans,Arial,sans-serif);font-size:1.05rem;font-weight:700;line-height:1.42;letter-spacing:.005em}
+      .vera-toast.is-leaving{opacity:0;transform:scale(.985);transition:.16s ease}
+
+      .vera-confirm{width:min(88vw,560px);border:0;border-radius:14px;color:#fff;background:rgba(0,0,0,.88);padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+      .vera-confirm::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(3px)}
+      .vera-confirm-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 16px;color:#efc778;font-size:2rem}
+      .vera-confirm-copy{text-align:center}
+      .vera-confirm-title{display:block;margin:0;color:#fff;font-family:var(--sans,Arial,sans-serif);font-size:1.08rem;font-weight:800;line-height:1.4}
+      .vera-confirm-message{margin:8px auto 0;max-width:450px;color:#fff;font-size:.94rem;line-height:1.5}
+      .vera-confirm-actions{display:flex;justify-content:center;gap:12px;margin-top:24px}
+      .vera-confirm-actions .btn{min-width:145px}
+      .vera-confirm-accept,.vera-confirm-accept.danger{background:#efc778;border-color:#efc778;color:#070707}
+      .is-busy{pointer-events:none;opacity:.78}
+      @keyframes vera-toast-in{from{opacity:0;transform:scale(.975) translateY(6px)}to{opacity:1;transform:none}}
+      @media(max-width:560px){.vera-toast{grid-template-columns:50px minmax(0,1fr);gap:14px;padding:24px 22px}.vera-toast-icon{width:46px;height:46px;font-size:1.55rem}.vera-toast-message{font-size:.98rem}.vera-confirm{padding:26px 20px}.vera-confirm-actions{display:grid}.vera-confirm-actions .btn{width:100%}}
     `;
     document.head.appendChild(style);
   }
@@ -32,21 +47,28 @@
   }
 
   function notify(message, type = 'info', options = {}) {
+    if (type === 'loading') return { close() {}, element: null };
+
     const host = ensureToastHost();
     host.querySelectorAll('.vera-toast').forEach(item => item.remove());
-    const map = {
-      info: ['circle-info', 'Información'], success: ['circle-check', 'Listo'],
-      warning: ['triangle-exclamation', 'Atención'], error: ['circle-xmark', 'Error'],
-      loading: ['spinner', 'Procesando']
+    const icons = {
+      info: 'circle-info',
+      success: 'circle-check',
+      warning: 'triangle-exclamation',
+      error: 'circle-xmark'
     };
-    const [iconName, fallbackTitle] = map[type] || map.info;
     const toast = document.createElement('div');
-    toast.className = `vera-toast vera-toast-${type}`;
-    toast.innerHTML = `<span class="vera-toast-icon ${type === 'loading' ? 'is-spinning' : ''}">${icon(iconName)}</span><span class="vera-toast-copy"><strong>${escapeHtml(options.title || fallbackTitle)}</strong><span>${escapeHtml(message)}</span></span><button class="vera-toast-close" type="button" aria-label="Cerrar">×</button>`;
+    toast.className = 'vera-toast';
+    toast.innerHTML = `<span class="vera-toast-icon">${icon(icons[type] || icons.info)}</span><span class="vera-toast-message">${escapeHtml(message)}</span>`;
     host.appendChild(toast);
-    const close = () => { if (!toast.isConnected) return; toast.classList.add('is-leaving'); setTimeout(() => toast.remove(), 180); };
-    toast.querySelector('.vera-toast-close').addEventListener('click', close);
-    if (type !== 'loading') setTimeout(close, options.duration || 2600);
+
+    const close = () => {
+      if (!toast.isConnected) return;
+      toast.classList.add('is-leaving');
+      setTimeout(() => toast.remove(), 160);
+    };
+    const duration = options.duration || (type === 'error' || type === 'warning' ? 3200 : 2200);
+    setTimeout(close, duration);
     return { close, element: toast };
   }
 
@@ -54,7 +76,7 @@
     if (confirmDialog) return confirmDialog;
     confirmDialog = document.createElement('dialog');
     confirmDialog.className = 'vera-confirm';
-    confirmDialog.innerHTML = `<div class="vera-confirm-icon"></div><div class="vera-confirm-copy"><p class="eyebrow">Confirmación</p><h2 class="vera-confirm-title">Confirmar acción</h2><p class="vera-confirm-message"></p></div><div class="vera-confirm-actions"><button class="btn vera-confirm-cancel" type="button">Cancelar</button><button class="btn primary vera-confirm-accept" type="button">Confirmar</button></div>`;
+    confirmDialog.innerHTML = `<div class="vera-confirm-icon"></div><div class="vera-confirm-copy"><strong class="vera-confirm-title"></strong><p class="vera-confirm-message"></p></div><div class="vera-confirm-actions"><button class="btn vera-confirm-cancel" type="button">Cancelar</button><button class="btn vera-confirm-accept" type="button">Confirmar</button></div>`;
     document.body.appendChild(confirmDialog);
     return confirmDialog;
   }
@@ -67,25 +89,35 @@
     const accept = dialog.querySelector('.vera-confirm-accept');
     const cancel = dialog.querySelector('.vera-confirm-cancel');
     accept.textContent = confirmText;
-    accept.classList.toggle('danger', danger);
-    accept.classList.toggle('primary', !danger);
     dialog.showModal();
+
     return new Promise(resolve => {
       const finish = value => {
-        accept.removeEventListener('click', yes); cancel.removeEventListener('click', no); dialog.removeEventListener('cancel', onCancel); dialog.close(); resolve(value);
+        accept.removeEventListener('click', yes);
+        cancel.removeEventListener('click', no);
+        dialog.removeEventListener('cancel', onCancel);
+        dialog.close();
+        resolve(value);
       };
-      const yes = () => finish(true), no = () => finish(false), onCancel = event => { event.preventDefault(); finish(false); };
-      accept.addEventListener('click', yes); cancel.addEventListener('click', no); dialog.addEventListener('cancel', onCancel);
+      const yes = () => finish(true);
+      const no = () => finish(false);
+      const onCancel = event => { event.preventDefault(); finish(false); };
+      accept.addEventListener('click', yes);
+      cancel.addEventListener('click', no);
+      dialog.addEventListener('cancel', onCancel);
     });
   }
 
   function setBusy(button, busy, text = 'Procesando...') {
     if (!button) return;
     if (busy) {
-      button.dataset.originalHtml = button.innerHTML; button.disabled = true; button.classList.add('is-busy');
+      button.dataset.originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.classList.add('is-busy');
       button.innerHTML = `${icon('spinner', 'is-spinning')}<span>${escapeHtml(text)}</span>`;
     } else {
-      button.disabled = false; button.classList.remove('is-busy');
+      button.disabled = false;
+      button.classList.remove('is-busy');
       if (button.dataset.originalHtml) button.innerHTML = button.dataset.originalHtml;
       delete button.dataset.originalHtml;
     }
