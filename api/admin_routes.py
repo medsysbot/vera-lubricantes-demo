@@ -107,7 +107,7 @@ def dashboard(admin: AdminContext = Depends(require_admin)):
               (select count(*) from vera.clients) as clients,
               (select count(*) from vera.vehicles) as vehicles,
               (select count(*) from vera.services where date_trunc('month', service_date)=date_trunc('month', current_date)) as services_month,
-              (select count(*) from vera.promotions) as promotions,
+              (select count(*) from vera.promotions where deleted_at is null) as promotions,
               (select count(*) from vera.reminders where status='pending') as reminders
             """
         ).fetchone()
@@ -386,9 +386,46 @@ def list_promotions(admin: AdminContext = Depends(require_admin)):
             """
             select p.id,p.title,p.detail,p.audience_scope,p.criterion_value,p.published_at,
                    (select count(*) from vera.messages m where m.promotion_id=p.id) as recipients
-            from vera.promotions p order by p.published_at desc nulls last
+            from vera.promotions p
+            where p.deleted_at is null
+            order by p.published_at desc nulls last
             """
         ).fetchall()
+
+
+@router.delete("/promotions")
+def delete_promotions(promotion_ids: list[UUID], admin: AdminContext = Depends(require_admin)):
+    ids = list(dict.fromkeys(promotion_ids))
+    if not ids:
+        raise HTTPException(status_code=400, detail="Seleccioná al menos una promoción")
+    with connection() as conn:
+        rows = conn.execute(
+            """
+            update vera.promotions
+            set deleted_at=now()
+            where id=any(%s) and deleted_at is null
+            returning id
+            """,
+            (ids,),
+        ).fetchall()
+        if not rows:
+            raise HTTPException(status_code=404, detail="No se encontraron promociones activas para eliminar")
+        deleted_ids = [row["id"] for row in rows]
+        conn.execute(
+            """
+            update vera.messages
+            set client_deleted_at=coalesce(client_deleted_at,now()),
+                is_read=true,
+                read_at=coalesce(read_at,now())
+            where promotion_id=any(%s)
+            """,
+            (deleted_ids,),
+        )
+        conn.execute(
+            "insert into vera.admin_activity (admin_id, action_type, description) values (%s,%s,%s)",
+            (admin.id, "promotions_deleted", f"Promociones eliminadas: {len(deleted_ids)}"),
+        )
+    return {"deleted": len(deleted_ids), "ids": deleted_ids}
 
 
 @router.get("/messages")
