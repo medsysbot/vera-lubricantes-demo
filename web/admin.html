@@ -7,6 +7,21 @@
   <title>VERA | Administración</title>
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/global.css">
+  <style>
+    .fa-svg{width:1em;height:1em;display:inline-block;vertical-align:-.125em;fill:currentColor}.is-spinning{animation:vera-spin .85s linear infinite}@keyframes vera-spin{to{transform:rotate(360deg)}}
+    .admin-body{background:radial-gradient(circle at 78% -8%,rgba(29,66,96,.46),transparent 31%),linear-gradient(145deg,#061421 0,#020812 58%,#010407 100%)}
+    .admin-main{max-width:1600px;width:100%;margin:0 auto;padding:20px 28px 24px}.admin-topbar{position:relative;overflow:hidden;min-height:96px;padding:4px 0 18px}.admin-topbar:after{content:"";position:absolute;right:-3%;top:-90px;width:44%;height:220px;background:radial-gradient(ellipse at 50% 70%,rgba(114,143,168,.18),transparent 54%),linear-gradient(118deg,transparent 28%,rgba(255,255,255,.035) 29%,transparent 31%,transparent 42%,rgba(255,255,255,.025) 43%,transparent 45%);pointer-events:none}.admin-topbar-copy,.admin-profile{position:relative;z-index:1}.admin-topbar h1{font-size:2.05rem}.admin-subtitle{font-size:.82rem}
+    .admin-sidebar{width:228px;padding:20px 12px 16px}.admin-layout{grid-template-columns:228px minmax(0,1fr)}.sidebar-brand{padding:0 12px 16px}.sidebar-caption{margin:10px 0 0 58px}.admin-nav{gap:3px;margin-top:14px}.admin-nav button{display:flex;align-items:center;gap:13px;min-height:46px;padding:0 14px;border-radius:8px}.admin-nav button:before{display:none!important}.nav-icon{width:19px;color:#8696a6;font-size:.92rem;text-align:center}.admin-nav button.active .nav-icon{color:var(--gold2)}.admin-nav button.active:after{left:-13px}.sidebar-user .fa-svg{font-size:.82rem}
+    .dashboard-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 14px}.dashboard-kpis .kpi-card{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:13px;min-height:112px;padding:16px}.kpi-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(217,162,76,.48);border-radius:50%;color:var(--gold2);font-size:1.15rem;background:rgba(217,162,76,.025)}.kpi-copy strong{font-family:var(--sans);font-size:1.75rem;font-weight:650}.kpi-copy span{margin-top:4px}.kpi-chevron{color:var(--gold2);opacity:.85}.kpi-foot{grid-column:2/4;display:flex;align-items:center;justify-content:space-between;margin-top:-2px;color:#708092;font-size:.66rem}.kpi-line{width:72px;height:18px;border-bottom:2px solid rgba(217,162,76,.8);transform:skewY(-12deg);opacity:.75}
+    .dashboard-workspace{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(360px,.94fr);gap:14px}.dashboard-workspace>.glass-card{margin:0;padding:18px}.workspace-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:13px}.workspace-title{display:flex;gap:12px;align-items:flex-start}.workspace-title>.fa-svg{color:var(--gold2);font-size:1.35rem;margin-top:3px}.workspace-title h2{margin:0;font-size:1.38rem}.workspace-title p{margin:3px 0 0;color:var(--muted);font-size:.72rem}.dashboard-search{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:12px}.dashboard-search .text-input{min-height:42px}.dashboard-client-list{display:grid;gap:7px}.dashboard-client-row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:9px 10px;border:1px solid rgba(137,159,180,.13);border-radius:9px;background:rgba(4,15,25,.5);cursor:pointer}.dashboard-client-row:hover{border-color:rgba(217,162,76,.35);background:rgba(217,162,76,.035)}.client-initial{display:grid;place-items:center;width:36px;height:36px;border:1px solid rgba(217,162,76,.48);border-radius:50%;color:var(--gold2);font-family:var(--serif);font-size:.82rem}.dashboard-client-row strong{display:block;font-size:.77rem}.dashboard-client-row small{display:block;margin-top:3px;color:var(--muted);font-size:.65rem}.row-arrow{color:var(--gold2);font-size:.75rem}.dashboard-service-box{display:grid;gap:14px}.service-launcher{padding:15px;border:1px solid rgba(137,159,180,.14);border-radius:12px;background:linear-gradient(145deg,rgba(13,31,46,.7),rgba(5,15,25,.78))}.service-launcher label{margin-bottom:8px}.service-launcher .btn{width:100%;margin-top:10px}.service-guide{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.service-guide div{padding:11px;border:1px solid rgba(137,159,180,.11);border-radius:9px;background:rgba(4,14,23,.45)}.service-guide .fa-svg{color:var(--gold2);margin-bottom:7px}.service-guide strong{display:block;font-size:.7rem}.service-guide small{display:block;margin-top:3px;color:var(--muted);font-size:.62rem;line-height:1.35}
+    .dashboard-promotions{margin-top:14px}.promotion-row{display:grid;grid-template-columns:minmax(180px,1.25fr) minmax(120px,.7fr) minmax(0,1.5fr) auto;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(137,159,180,.1)}.promotion-row:last-child{border-bottom:0}.promotion-row strong{font-size:.75rem}.promotion-row span{color:var(--muted);font-size:.68rem}.promotion-state{display:inline-flex!important;align-items:center;gap:6px;color:#9ce3c4!important;white-space:nowrap}.promotion-state:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+    .activity-compact{margin-top:14px}.activity-compact .table-wrap{max-height:230px}.panel-icon-title{display:flex;align-items:center;gap:10px}.panel-icon-title>.fa-svg{color:var(--gold2)}
+    .btn .fa-svg{font-size:.9em}.record-actions .btn{gap:7px}.search-icon{display:grid;place-items:center}.search-icon .fa-svg{width:.92em}.action-icon{font-size:1rem}.action-icon .fa-svg{width:1.08em;height:1.08em}.dialog-close{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.035)}
+    .vera-toast-host{position:fixed;right:18px;top:18px;z-index:9999;display:grid;gap:10px;width:min(390px,calc(100vw - 30px))}.vera-toast{display:grid;grid-template-columns:36px 1fr 24px;gap:11px;align-items:start;padding:13px 13px 13px 12px;border:1px solid rgba(137,159,180,.28);border-radius:12px;background:rgba(5,16,27,.97);box-shadow:0 20px 55px rgba(0,0,0,.42);animation:toast-in .18s ease-out}.vera-toast-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--gold2);background:rgba(217,162,76,.09)}.vera-toast-success .vera-toast-icon{color:#78dbae;background:rgba(43,200,138,.1)}.vera-toast-error .vera-toast-icon{color:#ff8e98;background:rgba(217,47,61,.12)}.vera-toast-warning .vera-toast-icon{color:#f0c775}.vera-toast-copy strong,.vera-toast-copy span{display:block}.vera-toast-copy strong{font-size:.75rem}.vera-toast-copy span{margin-top:3px;color:#aeb8c2;font-size:.7rem;line-height:1.4}.vera-toast-close{border:0;background:transparent;color:#718091;font-size:1rem;cursor:pointer}.vera-toast.is-leaving{opacity:0;transform:translateX(10px);transition:.18s}.vera-confirm{width:min(92vw,430px);border:1px solid rgba(217,162,76,.3);border-radius:16px;color:var(--text);background:#07131f;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.55)}.vera-confirm::backdrop{background:rgba(0,0,0,.76);backdrop-filter:blur(4px)}.vera-confirm-icon{display:grid;place-items:center;width:46px;height:46px;border:1px solid rgba(217,162,76,.4);border-radius:50%;color:var(--gold2);margin-bottom:14px}.vera-confirm h2{margin:0 0 7px}.vera-confirm-message{margin:0;color:var(--muted);font-size:.82rem;line-height:1.5}.vera-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.vera-confirm-accept.danger{background:#8f2630;border-color:#c64a56;color:#fff}.is-busy{pointer-events:none;opacity:.75}@keyframes toast-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+    @media(max-width:1250px){.dashboard-workspace{grid-template-columns:1fr}.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:860px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{width:auto}.admin-nav button{justify-content:center}.dashboard-workspace{grid-template-columns:1fr}.dashboard-kpis{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.dashboard-kpis{grid-template-columns:1fr}.dashboard-search{grid-template-columns:1fr}.promotion-row{grid-template-columns:1fr}.service-guide{grid-template-columns:1fr}.vera-confirm-actions{display:grid}.admin-main{padding:15px}}
+  </style>
 </head>
 <body class="admin-body">
   <section class="admin-login" id="admin-login">
@@ -18,7 +33,7 @@
         <p class="admin-subtitle">Gestión de clientes, vehículos, servicios y comunicaciones.</p>
         <label>Usuario<input class="text-input" id="admin-username" autocomplete="username" required></label>
         <label>Contraseña<input class="text-input" id="admin-password" type="password" autocomplete="current-password" required></label>
-        <button class="btn primary" type="submit">Ingresar al panel</button>
+        <button class="btn primary" type="submit"><span data-fa="right-from-bracket"></span> Ingresar al panel</button>
         <p class="error-text" id="admin-login-error"></p>
       </form>
     </div>
@@ -31,17 +46,17 @@
         <span class="sidebar-caption">Gestión integral</span>
       </div>
       <nav class="admin-nav" aria-label="Navegación administrativa">
-        <button class="active" data-admin-go="dashboard">Resumen</button>
-        <button data-admin-go="clients">Clientes</button>
-        <button data-admin-go="vehicles">Vehículos</button>
-        <button data-admin-go="services">Servicios</button>
-        <button data-admin-go="promotions">Promociones</button>
-        <button data-admin-go="messages">Mensajes</button>
-        <button data-admin-go="reminders">Recordatorios</button>
+        <button class="active" data-admin-go="dashboard"><span class="nav-icon" data-fa="house"></span><span>Resumen</span></button>
+        <button data-admin-go="clients"><span class="nav-icon" data-fa="users"></span><span>Clientes</span></button>
+        <button data-admin-go="vehicles"><span class="nav-icon" data-fa="car"></span><span>Vehículos</span></button>
+        <button data-admin-go="services"><span class="nav-icon" data-fa="wrench"></span><span>Servicios</span></button>
+        <button data-admin-go="promotions"><span class="nav-icon" data-fa="tags"></span><span>Promociones</span></button>
+        <button data-admin-go="messages"><span class="nav-icon" data-fa="comments"></span><span>Mensajes</span></button>
+        <button data-admin-go="reminders"><span class="nav-icon" data-fa="bell"></span><span>Recordatorios</span></button>
       </nav>
       <div class="sidebar-foot">
         <div class="sidebar-user"><span class="sidebar-avatar">V</span><div><strong id="admin-name">Administrador</strong><small>Lubricentro VERA</small></div></div>
-        <button class="link-button sidebar-logout" id="admin-logout" type="button">Cerrar sesión</button>
+        <button class="link-button sidebar-logout" id="admin-logout" type="button"><span data-fa="right-from-bracket"></span> Cerrar sesión</button>
       </div>
     </aside>
 
@@ -52,115 +67,92 @@
           <h1 id="admin-title">Panel <span>administrativo</span></h1>
           <p class="admin-subtitle">Gestioná clientes, vehículos, servicios y promociones desde un solo lugar.</p>
         </div>
-        <div class="admin-profile" aria-label="Perfil administrativo">
-          <span class="profile-avatar">V</span>
-          <span><strong>Lubricentro VERA</strong><small>Administrador</small></span>
-        </div>
+        <div class="admin-profile"><span class="profile-avatar">V</span><span><strong>Lubricentro VERA</strong><small>Administrador</small></span></div>
       </header>
 
       <section class="admin-view active" data-admin-view="dashboard">
-        <div class="quick-actions admin-action-strip">
-          <button class="admin-action-card" data-admin-go="clients"><span class="action-icon">＋</span><span class="action-copy"><strong>Nuevo cliente</strong><small>Registrar cliente y vehículo</small></span><span class="action-arrow">›</span></button>
-          <button class="admin-action-card" data-admin-go="services"><span class="action-icon">◇</span><span class="action-copy"><strong>Nuevo servicio</strong><small>Buscar por patente o cliente</small></span><span class="action-arrow">›</span></button>
-          <button class="admin-action-card" data-admin-go="promotions"><span class="action-icon">⌁</span><span class="action-copy"><strong>Cargar promoción</strong><small>Segmentar con registros reales</small></span><span class="action-arrow">›</span></button>
+        <div class="kpi-grid dashboard-kpis" id="dashboard-kpis"></div>
+        <div class="dashboard-workspace">
+          <section class="glass-card">
+            <div class="workspace-heading">
+              <div class="workspace-title"><span data-fa="users"></span><div><h2>Clientes</h2><p>Buscá un cliente y accedé a sus vehículos.</p></div></div>
+              <button class="btn" data-admin-go="clients" type="button"><span data-fa="user-plus"></span> Nuevo cliente</button>
+            </div>
+            <div class="dashboard-search"><input class="text-input" id="dashboard-client-search" placeholder="Buscar por nombre, teléfono o patente"><button class="btn" id="dashboard-client-search-btn" type="button"><span data-fa="magnifying-glass"></span> Buscar</button></div>
+            <div class="dashboard-client-list" id="dashboard-client-list"></div>
+          </section>
+
+          <section class="glass-card dashboard-service-box">
+            <div class="workspace-heading">
+              <div class="workspace-title"><span data-fa="wrench"></span><div><h2>Nuevo servicio</h2><p>Identificá el vehículo y continuá con la carga precargada.</p></div></div>
+            </div>
+            <div class="service-launcher">
+              <label>Patente o cliente<input class="text-input" id="dashboard-service-search" placeholder="Ej. ABC123 o Juan Pérez"></label>
+              <button class="btn primary" id="dashboard-service-go" type="button"><span data-fa="wrench"></span> Buscar vehículo</button>
+            </div>
+            <div class="service-guide">
+              <div><span data-fa="magnifying-glass"></span><strong>1. Buscar</strong><small>Encontrá el vehículo por patente o cliente.</small></div>
+              <div><span data-fa="car"></span><strong>2. Seleccionar</strong><small>VERA recupera la información ya registrada.</small></div>
+              <div><span data-fa="oil-can"></span><strong>3. Completar</strong><small>Cargá únicamente los datos del nuevo servicio.</small></div>
+              <div><span data-fa="floppy-disk"></span><strong>4. Guardar</strong><small>El servicio queda disponible en el historial.</small></div>
+            </div>
+          </section>
         </div>
-        <div class="kpi-grid" id="dashboard-kpis"></div>
-        <section class="glass-card admin-panel dashboard-panel">
-          <div class="panel-heading"><div><p class="panel-kicker">Movimientos del sistema</p><h2>Actividad reciente</h2></div><span class="panel-mark">VERA</span></div>
+
+        <section class="glass-card admin-panel dashboard-promotions">
+          <div class="panel-heading"><div class="panel-icon-title"><span data-fa="tag"></span><div><p class="panel-kicker">Comunicación</p><h2>Promociones publicadas</h2></div></div><button class="btn" data-admin-go="promotions" type="button"><span data-fa="user-plus"></span> Nueva promoción</button></div>
+          <div id="dashboard-promotions"></div>
+        </section>
+
+        <section class="glass-card admin-panel activity-compact">
+          <div class="panel-heading"><div class="panel-icon-title"><span data-fa="circle-info"></span><div><p class="panel-kicker">Movimientos del sistema</p><h2>Actividad reciente</h2></div></div><span class="panel-mark">VERA</span></div>
           <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Referencia</th></tr></thead><tbody id="activity-body"></tbody></table></div>
         </section>
       </section>
 
       <section class="admin-view" data-admin-view="clients">
-        <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Clientes</h1><p class="admin-subtitle">Buscá, registrá y administrá clientes y sus vehículos asociados.</p></div><button class="btn primary" id="toggle-new-client" type="button">＋ Nuevo cliente</button></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="client-search" placeholder="Nombre, teléfono o patente"><button class="btn" id="search-clients" type="button">Buscar</button></div>
+        <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Clientes</h1><p class="admin-subtitle">Buscá, registrá y administrá clientes y sus vehículos asociados.</p></div><button class="btn primary" id="toggle-new-client" type="button"><span data-fa="user-plus"></span> Nuevo cliente</button></div>
+        <div class="search-row search-command"><span class="search-icon" data-fa="magnifying-glass"></span><input class="text-input" id="client-search" placeholder="Nombre, teléfono o patente"><button class="btn" id="search-clients" type="button"><span data-fa="magnifying-glass"></span> Buscar</button></div>
         <form class="glass-card admin-panel form-panel hidden" id="new-client-form">
           <div class="panel-heading"><div><p class="panel-kicker">Alta inicial</p><h2>Crear cliente y primer vehículo</h2></div></div>
           <div class="form-grid">
-            <label>Nombre y apellido<input class="text-input" name="full_name" required></label>
-            <label>Teléfono<input class="text-input" name="phone" required></label>
-            <label>Patente<input class="text-input" name="plate" required></label>
-            <label>Marca<input class="text-input" name="brand"></label>
-            <label>Modelo<input class="text-input" name="model" required></label>
-            <label>Descripción<input class="text-input" name="description"></label>
-            <label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label>
-            <label>Kilometraje registrado<input class="text-input" name="current_mileage" type="number" min="0"></label>
+            <label>Nombre y apellido<input class="text-input" name="full_name" required></label><label>Teléfono<input class="text-input" name="phone" required></label><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje registrado<input class="text-input" name="current_mileage" type="number" min="0"></label>
           </div>
-          <div class="form-actions form-actions-end"><button class="btn primary" type="submit">Guardar cliente</button></div>
-          <p class="error-text" id="new-client-error"></p>
+          <div class="form-actions form-actions-end"><button class="btn primary" type="submit"><span data-fa="floppy-disk"></span> Guardar cliente</button></div><p class="error-text" id="new-client-error"></p>
         </form>
         <div class="record-grid" id="client-results"></div>
       </section>
 
       <section class="admin-view" data-admin-view="vehicles">
         <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Vehículos</h1><p class="admin-subtitle">Localizá rápidamente un vehículo por patente, modelo o cliente.</p></div></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="vehicle-search" placeholder="Patente, modelo o cliente"><button class="btn" id="search-vehicles" type="button">Buscar</button></div>
-        <div class="record-grid" id="vehicle-results"></div>
+        <div class="search-row search-command"><span class="search-icon" data-fa="magnifying-glass"></span><input class="text-input" id="vehicle-search" placeholder="Patente, modelo o cliente"><button class="btn" id="search-vehicles" type="button"><span data-fa="magnifying-glass"></span> Buscar</button></div><div class="record-grid" id="vehicle-results"></div>
       </section>
 
       <section class="admin-view" data-admin-view="services">
         <div class="view-heading"><div><p class="eyebrow">Taller</p><h1>Nuevo servicio <span>precargado</span></h1><p class="admin-subtitle">Seleccioná el vehículo, verificá la información previa y completá únicamente lo nuevo.</p></div></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="service-search" placeholder="Patente o cliente"><button class="btn" id="search-service-vehicle" type="button">Buscar vehículo</button></div>
-        <div class="record-grid" id="service-search-results"></div>
-        <section class="glass-card admin-panel service-panel hidden" id="service-editor">
-          <div class="preloaded-strip" id="service-preloaded"></div>
-          <form id="service-form">
-            <input type="hidden" id="service-vehicle-id"><input type="hidden" id="service-id">
-            <div class="panel-heading service-heading"><div><p class="panel-kicker">Datos del servicio</p><h2>Completar servicio</h2></div></div>
-            <div class="form-grid service-grid">
-              <label>Fecha<input class="text-input" name="service_date" type="date" required></label>
-              <label>Kilómetros<input class="text-input" name="mileage" type="number" min="0" required></label>
-              <label>Próximo cambio km<input class="text-input" name="next_change_km" type="number" min="0"></label>
-              <label>Aceite<input class="text-input" name="oil"></label><label>Tipo<input class="text-input" name="oil_type"></label>
-              <label>Filtro de aceite<input class="text-input" name="oil_filter"></label><label>Filtro de combustible<input class="text-input" name="fuel_filter"></label>
-              <label>Filtro de aire<input class="text-input" name="air_filter"></label><label>Filtro de cabina<input class="text-input" name="cabin_filter"></label>
-              <label>Bujías<input class="text-input" name="spark_plugs"></label><label>Aceite caja de vel.<input class="text-input" name="gearbox_oil"></label>
-              <label>Aceite diferencial<input class="text-input" name="differential_oil"></label><label>Engrase<input class="text-input" name="grease"></label>
-              <label>Líquido hidráulico<input class="text-input" name="hydraulic_fluid"></label><label>Líquido refrigerante<input class="text-input" name="coolant"></label>
-              <label>Líquido de freno<input class="text-input" name="brake_fluid"></label><label>Control de neumáticos<input class="text-input" name="tire_control"></label>
-              <label>Rotación de neumáticos<input class="text-input" name="tire_rotation"></label><label>Batería<input class="text-input" name="battery"></label>
-              <label class="wide">Observaciones<textarea class="text-input textarea" name="observations" placeholder="Observaciones del servicio realizado"></textarea></label>
-            </div>
-            <div class="form-actions form-actions-end"><button class="btn" id="cancel-service" type="button">Cancelar</button><button class="btn primary" id="save-service" type="submit">Guardar servicio</button></div>
-            <p class="error-text" id="service-error"></p>
-          </form>
-          <div class="service-history" id="admin-service-history"></div>
-        </section>
+        <div class="search-row search-command"><span class="search-icon" data-fa="magnifying-glass"></span><input class="text-input" id="service-search" placeholder="Patente o cliente"><button class="btn" id="search-service-vehicle" type="button"><span data-fa="magnifying-glass"></span> Buscar vehículo</button></div><div class="record-grid" id="service-search-results"></div>
+        <section class="glass-card admin-panel service-panel hidden" id="service-editor"><div class="preloaded-strip" id="service-preloaded"></div><form id="service-form"><input type="hidden" id="service-vehicle-id"><input type="hidden" id="service-id"><div class="panel-heading service-heading"><div><p class="panel-kicker">Datos del servicio</p><h2>Completar servicio</h2></div></div><div class="form-grid service-grid">
+          <label>Fecha<input class="text-input" name="service_date" type="date" required></label><label>Kilómetros<input class="text-input" name="mileage" type="number" min="0" required></label><label>Próximo cambio km<input class="text-input" name="next_change_km" type="number" min="0"></label><label>Aceite<input class="text-input" name="oil"></label><label>Tipo<input class="text-input" name="oil_type"></label><label>Filtro de aceite<input class="text-input" name="oil_filter"></label><label>Filtro de combustible<input class="text-input" name="fuel_filter"></label><label>Filtro de aire<input class="text-input" name="air_filter"></label><label>Filtro de cabina<input class="text-input" name="cabin_filter"></label><label>Bujías<input class="text-input" name="spark_plugs"></label><label>Aceite caja de vel.<input class="text-input" name="gearbox_oil"></label><label>Aceite diferencial<input class="text-input" name="differential_oil"></label><label>Engrase<input class="text-input" name="grease"></label><label>Líquido hidráulico<input class="text-input" name="hydraulic_fluid"></label><label>Líquido refrigerante<input class="text-input" name="coolant"></label><label>Líquido de freno<input class="text-input" name="brake_fluid"></label><label>Control de neumáticos<input class="text-input" name="tire_control"></label><label>Rotación de neumáticos<input class="text-input" name="tire_rotation"></label><label>Batería<input class="text-input" name="battery"></label><label class="wide">Observaciones<textarea class="text-input textarea" name="observations" placeholder="Observaciones del servicio realizado"></textarea></label>
+        </div><div class="form-actions form-actions-end"><button class="btn" id="cancel-service" type="button">Cancelar</button><button class="btn primary" id="save-service" type="submit"><span data-fa="floppy-disk"></span> Guardar servicio</button></div><p class="error-text" id="service-error"></p></form><div class="service-history" id="admin-service-history"></div></section>
       </section>
 
       <section class="admin-view" data-admin-view="promotions">
         <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Publicar <span>promoción</span></h1><p class="admin-subtitle">Definí el criterio y calculá la audiencia utilizando los registros reales de VERA.</p></div></div>
-        <div class="promo-grid">
-          <form class="glass-card admin-panel form-panel" id="promotion-form">
-            <div class="panel-heading"><div><p class="panel-kicker">Segmentación</p><h2>Nueva promoción</h2></div></div>
-            <label>Criterio<select class="text-input" name="criterion"><option value="service:oil">Aceite registrado</option><option value="vehicle:model">Modelo del vehículo</option></select></label>
-            <label>Valor<input class="text-input" name="criterion_value" placeholder="Ej. 20W50 o Corsa" required></label>
-            <label>Título<input class="text-input" name="title" required></label>
-            <label>Detalle<textarea class="text-input textarea" name="detail" required></textarea></label>
-            <div class="form-actions form-actions-end"><button class="btn" id="preview-promotion" type="button">Calcular audiencia</button><button class="btn primary" type="submit">Publicar promoción</button></div><p class="error-text" id="promotion-error"></p>
-          </form>
-          <section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section>
-        </div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="panel-heading"><div><p class="panel-kicker">Historial</p><h2>Promociones publicadas</h2></div></div><div id="published-promotions"></div></section>
+        <div class="promo-grid"><form class="glass-card admin-panel form-panel" id="promotion-form"><div class="panel-heading"><div><p class="panel-kicker">Segmentación</p><h2>Nueva promoción</h2></div></div><label>Criterio<select class="text-input" name="criterion"><option value="service:oil">Aceite registrado</option><option value="vehicle:model">Modelo del vehículo</option></select></label><label>Valor<input class="text-input" name="criterion_value" placeholder="Ej. 20W50 o Corsa" required></label><label>Título<input class="text-input" name="title" required></label><label>Detalle<textarea class="text-input textarea" name="detail" required></textarea></label><div class="form-actions form-actions-end"><button class="btn" id="preview-promotion" type="button"><span data-fa="magnifying-glass"></span> Calcular audiencia</button><button class="btn primary" type="submit"><span data-fa="tag"></span> Publicar promoción</button></div><p class="error-text" id="promotion-error"></p></form><section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section></div><section class="glass-card admin-panel dashboard-panel"><div class="panel-heading"><div><p class="panel-kicker">Historial</p><h2>Promociones publicadas</h2></div></div><div id="published-promotions"></div></section>
       </section>
 
-      <section class="admin-view" data-admin-view="messages">
-        <div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1><p class="admin-subtitle">Seguimiento de comunicaciones internas enviadas por VERA.</p></div></div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Título</th><th>Estado</th></tr></thead><tbody id="admin-messages"></tbody></table></div></section>
-      </section>
-
-      <section class="admin-view" data-admin-view="reminders">
-        <div class="view-heading"><div><p class="eyebrow">Mantenimiento</p><h1>Recordatorios</h1><p class="admin-subtitle">Control de avisos programados según los criterios que se definan para VERA.</p></div></div>
-        <div class="notice">La generación automática queda desactivada hasta definir el período y la anticipación comercial aprobados.</div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Vehículo</th><th>Vence</th><th>Notificar</th><th>Estado</th></tr></thead><tbody id="admin-reminders"></tbody></table></div></section>
-      </section>
+      <section class="admin-view" data-admin-view="messages"><div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1><p class="admin-subtitle">Seguimiento de comunicaciones internas enviadas por VERA.</p></div></div><section class="glass-card admin-panel dashboard-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Título</th><th>Estado</th></tr></thead><tbody id="admin-messages"></tbody></table></div></section></section>
+      <section class="admin-view" data-admin-view="reminders"><div class="view-heading"><div><p class="eyebrow">Mantenimiento</p><h1>Recordatorios</h1><p class="admin-subtitle">Control de avisos programados según los criterios que se definan para VERA.</p></div></div><div class="notice"><span data-fa="circle-info"></span> La generación automática queda desactivada hasta definir el período y la anticipación comercial aprobados.</div><section class="glass-card admin-panel dashboard-panel"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Vehículo</th><th>Vence</th><th>Notificar</th><th>Estado</th></tr></thead><tbody id="admin-reminders"></tbody></table></div></section></section>
 
       <footer class="admin-footer"><span>TECNOLOGÍA AL SERVICIO DE TU CONFIANZA</span><span>VERA LUBRICANTES</span></footer>
     </main>
   </div>
 
-  <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button">Copiar enlace</button></dialog>
-  <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit">Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
+  <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button"><span data-fa="copy"></span> Copiar enlace</button></dialog>
+  <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit"><span data-fa="floppy-disk"></span> Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
+
+  <script src="/js/fa-solid-icons.js"></script>
+  <script src="/js/vera-ui.js"></script>
   <script src="/js/admin.js" defer></script>
 </body>
 </html>
