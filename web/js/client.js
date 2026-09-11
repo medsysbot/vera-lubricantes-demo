@@ -1,4 +1,4 @@
-const state={me:null,vehicle:null,services:[],deferredInstall:null};
+const state={me:null,vehicle:null,services:[]};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const UI=window.VeraUI;
 const icon=(name,cls='')=>UI?.icon(name,cls)||'';
@@ -183,8 +183,6 @@ document.addEventListener('click',async e=>{
   if(target==='messages'){try{await loadMessages();showView('messages')}catch(x){UI.notify(x.message,'error')}return}
 });
 
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();state.deferredInstall=e;$('#install-button').hidden=false});
-$('#install-button').addEventListener('click',async()=>{if(!state.deferredInstall)return;await state.deferredInstall.prompt();state.deferredInstall=null;$('#install-button').hidden=true});
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>UI.notify('No se pudo registrar el modo PWA.','warning')));
 
 (async()=>{try{await loadMe();showMain()}catch{showLogin()}})();
