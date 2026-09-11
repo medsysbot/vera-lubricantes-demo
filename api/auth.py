@@ -13,6 +13,7 @@ from api.security import hash_token
 ADMIN_COOKIE = "vera_admin_session"
 CLIENT_COOKIE = "vera_client_session"
 DEVICE_COOKIE = "vera_device"
+DEV_CLIENT_HEADER = "x-vera-dev-client"
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,15 @@ class ClientContext:
 
 
 def require_admin(request: Request) -> AdminContext:
+    if not settings.auth_enabled:
+        with connection() as conn:
+            row = conn.execute(
+                "select id, username, display_name from vera.admins where is_active=true order by created_at limit 1"
+            ).fetchone()
+        if not row:
+            raise HTTPException(status_code=503, detail="Administrador de desarrollo no disponible")
+        return AdminContext(**row)
+
     token = request.cookies.get(ADMIN_COOKIE)
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sesion administrativa requerida")
@@ -55,6 +65,29 @@ def require_admin(request: Request) -> AdminContext:
 
 
 def require_client(request: Request) -> ClientContext:
+    if not settings.auth_enabled:
+        raw_client_id = request.headers.get(DEV_CLIENT_HEADER, "").strip()
+        if not raw_client_id:
+            raise HTTPException(status_code=400, detail="Selecciona un cliente desde Administracion")
+        try:
+            client_id = UUID(raw_client_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Cliente de desarrollo invalido") from exc
+        with connection() as conn:
+            row = conn.execute(
+                "select id, full_name, phone from vera.clients where id=%s",
+                (client_id,),
+            ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        return ClientContext(
+            id=row["id"],
+            full_name=row["full_name"],
+            phone=row["phone"],
+            device_hash="development",
+            access_version=0,
+        )
+
     session_token = request.cookies.get(CLIENT_COOKIE)
     device_token = request.cookies.get(DEVICE_COOKIE)
     if not session_token or not device_token:
