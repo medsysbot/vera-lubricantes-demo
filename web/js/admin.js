@@ -22,6 +22,10 @@
       vehicles: [],
       serviceVehicle: null,
       services: [],
+      messages: [],
+      messageRecipientsLoaded: false,
+      messageSending: false,
+      messageDeleting: false,
       qrUrl: '',
       selectedClientId: null,
       selectedVehicleId: null,
@@ -35,6 +39,7 @@
       if (!r.ok) {
         let m = `Error ${r.status}`;
         try { m = (await r.json()).detail || m; } catch {}
+        if (Array.isArray(m)) m = m.map(item => item.msg || 'Datos inválidos').join('. ');
         const e = new Error(m); e.status = r.status; throw e;
       }
       return r.status === 204 ? null : r.json();
@@ -125,7 +130,15 @@
       updatePromotionDeleteButton();
     }
 
-    function loginView(){ $('#admin-login').classList.remove('hidden'); $('#admin-app').classList.add('hidden'); }
+    function loginView(){
+      $('#admin-login').classList.remove('hidden'); $('#admin-app').classList.add('hidden');
+      $('#admin-message-form').reset(); setMessageAudience();
+      $('#message-recipient-search').value = '';
+      $('#message-recipient').innerHTML = '<option value="">Seleccioná un cliente</option>';
+      $('#admin-messages').innerHTML = ''; $('#admin-message-error').textContent = '';
+      state.messages = []; state.messageRecipientsLoaded = false;
+      updateAdminMessageSelection();
+    }
     function appView(){ $('#admin-login').classList.add('hidden'); $('#admin-app').classList.remove('hidden'); $('#admin-name').textContent = state.admin.display_name; go('dashboard'); }
     async function boot(){ try { state.admin = await api('/api/admin/me'); appView(); } catch { loginView(); } }
 
@@ -195,7 +208,7 @@
       const x = await api('/api/admin/dashboard'), c = x.counts;
       const kpis = [
         ['Clientes',c.clients,'users'],['Vehículos',c.vehicles,'car'],['Servicios del mes',c.services_month,'wrench'],['Promociones',c.promotions,'tags'],['Recordatorios',c.reminders,'bell'],
-        ['Mensajes no leídos',c.unread_messages,'comments','Pendientes de lectura por los clientes']
+        ['Mensajes no leídos',c.unread_messages,'comments','Consultas recibidas sin leer por el lubricentro']
       ];
       $('#dashboard-kpis').innerHTML = kpis.map(([l,v,i,description]) => `<article class="kpi-card glass-card"${description?` title="${esc(description)}"`:''}><span class="kpi-accent">${icon(i)}</span><strong>${v}</strong><span>${l}</span></article>`).join('');
     }
@@ -414,10 +427,143 @@
       try{const x=await api('/api/admin/promotions',{method:'DELETE',body:JSON.stringify(ids)});busy.close();await promotions();UI.notify(`${x.deleted} promoción(es) eliminada(s).`,'success');}catch(x){busy.close();UI.notify(x.message,'error',{title:'No se pudieron eliminar las promociones'})}
     });
 
-    async function messages(){
-      const x=await api('/api/admin/messages');
-      $('#admin-messages').innerHTML=x.map(m=>`<article class="admin-message-card"><span class="admin-message-icon">${icon(m.message_type==='promotion'?'tags':'comments')}</span><div class="admin-message-copy"><h3>${esc(m.client_name)}</h3><p><strong>${esc(m.title)}</strong>${m.body?` · ${esc(m.body)}`:''}</p></div><div class="admin-message-meta"><time>${dt(m.created_at)}</time><span class="${m.is_read?'':'unread'}">${m.is_read?'Leído':'No leído'}</span></div></article>`).join('')||`<div class="client-empty"><div>${icon('comments')}<p>Sin mensajes registrados.</p></div></div>`;
+    function messageReadLabel(m) {
+      const reader = m.sender_role === 'client' ? 'el lubricentro' : 'el cliente';
+      return m.is_read ? `Leído por ${reader}` : `Sin leer por ${reader}`;
     }
+
+    function selectedAdminMessageIds() {
+      return $$('[data-admin-message-select]:checked', $('#admin-messages')).map(input => input.value);
+    }
+
+    function updateAdminMessageSelection() {
+      const count = selectedAdminMessageIds().length;
+      $('#admin-message-selection-count').textContent = `${count} mensaje${count === 1 ? '' : 's'} seleccionado${count === 1 ? '' : 's'}`;
+      $('#delete-admin-messages').disabled = count === 0;
+    }
+
+    function renderAdminMessages() {
+      $('#admin-messages').innerHTML = state.messages.map(m => {
+        const incoming = m.sender_role === 'client';
+        return `<article class="admin-message-card selectable ${incoming && !m.is_read ? 'is-unread' : ''}">
+          <label class="message-selection-label"><input class="message-select" type="checkbox" data-admin-message-select value="${esc(m.id)}"><span>Seleccionar ${esc(m.title)} de ${esc(m.client_name)}</span></label>
+          <span class="admin-message-icon">${icon(m.message_type === 'promotion' ? 'tags' : 'comments')}</span>
+          <details class="admin-message-thread" data-admin-message-id="${esc(m.id)}">
+            <summary><div class="admin-message-copy"><span class="admin-message-direction">${incoming ? 'De' : 'Para'} ${esc(m.client_name)}</span><h3>${esc(m.title)}</h3></div><div class="admin-message-meta"><time>${dt(m.created_at)}</time><span class="${m.is_read ? '' : 'unread'}" data-admin-read-status>${messageReadLabel(m)}</span></div></summary>
+            <div class="admin-message-body"><p>${esc(m.body)}</p>${incoming ? `<button class="btn" type="button" data-reply-message="${esc(m.id)}">${icon('comments')} Responder</button>` : ''}</div>
+          </details>
+        </article>`;
+      }).join('') || `<div class="client-empty"><div>${icon('comments')}<p>Sin mensajes registrados.</p></div></div>`;
+      updateAdminMessageSelection();
+    }
+
+    async function loadMessageRecipients() {
+      const button = $('#search-message-client');
+      UI.setBusy(button, true, 'Buscando…');
+      try {
+        const q = $('#message-recipient-search').value.trim();
+        const clients = await api(`/api/admin/clients?search=${encodeURIComponent(q)}`);
+        $('#message-recipient').innerHTML = '<option value="">Seleccioná un cliente</option>' + clients.map(c => `<option value="${esc(c.id)}">${esc(c.full_name)} · ${esc(c.phone)}${c.vehicles.length ? ` · ${esc(c.vehicles.map(v => v.plate).join(', '))}` : ''}</option>`).join('');
+        if (!clients.length) UI.notify('No se encontraron clientes para esa búsqueda.', 'info');
+        state.messageRecipientsLoaded = true;
+      } finally { UI.setBusy(button, false); }
+    }
+
+    function setMessageAudience() {
+      const individual = $('#message-audience').value === 'client';
+      $('#message-recipient-fields').classList.toggle('hidden', !individual);
+      $('#message-recipient').required = individual;
+      $('#message-recipient').disabled = !individual;
+    }
+
+    async function messages() {
+      state.messages = await api('/api/admin/messages');
+      renderAdminMessages();
+      if (!state.messageRecipientsLoaded) await loadMessageRecipients();
+    }
+
+    $('#message-audience').addEventListener('change', setMessageAudience);
+    $('#message-recipient-search').addEventListener('input', () => { $('#message-recipient').value = ''; });
+    $('#search-message-client').addEventListener('click', () => loadMessageRecipients().catch(e => UI.notify(e.message, 'error')));
+    $('#message-recipient-search').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); void loadMessageRecipients().catch(x => UI.notify(x.message, 'error')); }
+    });
+    $('#refresh-admin-messages').addEventListener('click', async e => {
+      const button = e.currentTarget;
+      UI.setBusy(button, true, 'Actualizando…');
+      try { await messages(); } catch (x) { UI.notify(x.message, 'error'); }
+      finally { UI.setBusy(button, false); }
+    });
+    $('#admin-messages').addEventListener('change', updateAdminMessageSelection);
+    $('#admin-messages').addEventListener('toggle', async e => {
+      const details = e.target.closest('[data-admin-message-id]');
+      if (!details?.open) return;
+      const m = state.messages.find(item => item.id === details.dataset.adminMessageId);
+      if (!m || m.sender_role !== 'client' || m.is_read || details.dataset.reading) return;
+      details.dataset.reading = 'true';
+      try {
+        const result = await api(`/api/admin/messages/${encodeURIComponent(m.id)}/read`, {method:'POST'});
+        m.is_read = true; m.read_at = result.read_at;
+        details.closest('.admin-message-card').classList.remove('is-unread');
+        const label = details.querySelector('[data-admin-read-status]');
+        label.textContent = messageReadLabel(m); label.classList.remove('unread');
+      } catch (x) { UI.notify(x.message, 'error', {title:'No se pudo registrar la lectura'}); }
+      finally { delete details.dataset.reading; }
+    }, true);
+    $('#admin-messages').addEventListener('click', e => {
+      const reply = e.target.closest('[data-reply-message]');
+      if (!reply) return;
+      const m = state.messages.find(item => item.id === reply.dataset.replyMessage);
+      if (!m) return;
+      $('#message-audience').value = 'client'; setMessageAudience();
+      const select = $('#message-recipient');
+      if (![...select.options].some(option => option.value === m.client_id)) select.add(new Option(m.client_name, m.client_id));
+      select.value = m.client_id;
+      $('#message-recipient-search').value = '';
+      const form = $('#admin-message-form');
+      if (!form.elements.title.value.trim()) form.elements.title.value = m.title;
+      form.scrollIntoView({behavior:'smooth', block:'start'});
+      form.elements.body.focus({preventScroll:true});
+    });
+    $('#admin-message-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (state.messageSending) return;
+      const form = e.currentTarget;
+      const scope = form.elements.audience_scope.value;
+      const clientId = scope === 'client' ? form.elements.client_id.value : null;
+      const payload = {audience_scope:scope, client_id:clientId, title:form.elements.title.value.trim(), body:form.elements.body.value.trim()};
+      const error = $('#admin-message-error'); error.textContent = '';
+      if (!payload.title || !payload.body || (scope === 'client' && !clientId)) { error.textContent = 'Completá destinatario, asunto y mensaje.'; return; }
+      state.messageSending = true;
+      const button = $('#send-admin-message');
+      try {
+        const recipient = scope === 'all' ? 'TODOS los clientes registrados' : form.elements.client_id.selectedOptions[0].textContent;
+        const ok = await UI.confirmAction({title:'Enviar mensaje', message:`Se enviará este mensaje a ${recipient}.`, confirmText:'Enviar'});
+        if (!ok) return;
+        UI.setBusy(button, true, 'Enviando…');
+        const result = await api('/api/admin/messages', {method:'POST', body:JSON.stringify(payload)});
+        form.elements.title.value = ''; form.elements.body.value = '';
+        UI.notify(`Mensaje enviado a ${result.recipients} cliente(s).`, 'success');
+        try { await messages(); } catch { UI.notify('El mensaje se envió. Pulsá Actualizar para cargar el historial.', 'warning'); }
+      } catch (x) { error.textContent = x.message; UI.notify(x.message, 'error', {title:'No se pudo enviar'}); }
+      finally { state.messageSending = false; UI.setBusy(button, false); }
+    });
+    $('#delete-admin-messages').addEventListener('click', async () => {
+      const ids = selectedAdminMessageIds();
+      if (!ids.length || state.messageDeleting) return;
+      state.messageDeleting = true;
+      const button = $('#delete-admin-messages');
+      try {
+        const ok = await UI.confirmAction({title:'Eliminar mensajes', message:`Se eliminarán ${ids.length} mensaje(s) de la bandeja del lubricentro. Los clientes conservarán su copia.`, confirmText:'Eliminar', danger:true});
+        if (!ok) return;
+        UI.setBusy(button, true, 'Eliminando…');
+        const result = await api('/api/admin/messages', {method:'DELETE', body:JSON.stringify({ids})});
+        state.messages = state.messages.filter(m => !ids.includes(m.id));
+        renderAdminMessages();
+        UI.notify(`${result.deleted} mensaje(s) eliminado(s) de esta bandeja.`, 'success');
+      } catch (x) { UI.notify(x.message, 'error'); }
+      finally { state.messageDeleting = false; UI.setBusy(button, false); updateAdminMessageSelection(); }
+    });
 
     async function reminders(){const x=await api('/api/admin/reminders');$('#admin-reminders').innerHTML=x.map(r=>`<tr><td>${esc(r.client_name)}</td><td>${esc(r.plate)} · ${esc(r.model)}</td><td>${d(r.due_date)}</td><td>${dt(r.notify_at)}</td><td>${esc(r.status)}</td></tr>`).join('')||'<tr><td colspan="5">No hay recordatorios programados.</td></tr>'}
 

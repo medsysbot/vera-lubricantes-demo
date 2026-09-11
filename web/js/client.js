@@ -1,4 +1,4 @@
-const state={me:null,vehicle:null,services:[],messages:[]};
+const state={me:null,vehicle:null,services:[],messages:[],messageSending:false,messageDeleting:false};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const UI=window.VeraUI;
 const icon=(name,cls='')=>UI?.icon(name,cls)||'';
@@ -9,7 +9,7 @@ async function api(url,options={}){
   const headers={'Content-Type':'application/json',...(options.headers||{})};
   if(devClient)headers['X-VERA-Dev-Client']=devClient;
   const r=await fetch(url,{credentials:'same-origin',headers,...options});
-  if(!r.ok){let m=`Error ${r.status}`;try{m=(await r.json()).detail||m}catch{}const e=new Error(m);e.status=r.status;throw e}
+  if(!r.ok){let m=`Error ${r.status}`;try{m=(await r.json()).detail||m}catch{}if(Array.isArray(m))m=m.map(item=>item.msg||'Datos inválidos').join('. ');const e=new Error(m);e.status=r.status;throw e}
   return r.status===204?null:r.json();
 }
 
@@ -61,6 +61,11 @@ function showMain(){
   syncPushCard();
 }
 function showLogin(){
+  $('#client-message-form').reset();
+  $('#client-message-error').textContent='';
+  $('#message-list').innerHTML='';
+  state.messages=[];
+  updateClientMessageSelection();
   $('#app-view').classList.remove('active');
   $('#login-view').classList.add('active');
   $('#client-pin').value='';
@@ -150,50 +155,76 @@ function promotionContent(m,detail=false){
   const item=m.promotion_item?`<div class="promotion-item">${esc(m.promotion_item)}</div>`:'';
   return `${item}<div class="promotion-title">${esc(m.title)}</div><p class="promotion-detail">${esc(m.body)}</p>`;
 }
+function clientMessageStatus(m){
+  if(m.sender_role==='client')return m.is_read?'Leído por el lubricentro':'Enviado · Sin leer por el lubricentro';
+  return m.is_read?'Leído':'Sin leer';
+}
+function selectedClientMessageIds(){
+  return $$('[data-client-message-select]:checked',$('#message-list')).map(input=>input.value);
+}
+function updateClientMessageSelection(){
+  const count=selectedClientMessageIds().length;
+  $('#client-message-selection-count').textContent=`${count} mensaje${count===1?'':'s'} seleccionado${count===1?'':'s'}`;
+  $('#delete-client-messages').disabled=count===0;
+}
 function renderMessageList(){
+  $('#client-message-selection').classList.remove('hidden');
   const ms=state.messages;
-  $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card ${m.is_read?'':'unread'}" data-message-id="${esc(m.id)}"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${promotionContent(m)}</div><span class="message-chevron">${icon('chevron-right')}</span></article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
+  $('#message-list').innerHTML=ms.length?ms.map(m=>`<article class="message-card selectable ${m.sender_role==='admin'&&!m.is_read?'unread':''}">
+    <label class="message-selection-label"><input class="message-select" type="checkbox" data-client-message-select value="${esc(m.id)}"><span>Seleccionar ${esc(m.title)}</span></label>
+    <span class="message-icon">${icon(messageIcon(m.message_type))}</span>
+    <button class="message-open" type="button" data-message-id="${esc(m.id)}"><span class="message-tag">${m.sender_role==='client'?'Para el lubricentro':messageLabel(m.message_type)}</span>${promotionContent(m)}<time>${fmtDateTime(m.created_at)}</time><span class="message-read-status">${clientMessageStatus(m)}</span></button>
+  </article>`).join(''):`<div class="client-empty glass-card">${icon('circle-info')}<p>No tenés mensajes por el momento.</p></div>`;
+  updateClientMessageSelection();
   UI.decorateIcons(document);
 }
 function renderMessageDetail(m){
   if(!m){renderMessageList();return}
-  $('#message-list').innerHTML=`<button type="button" class="link-button" data-message-back>&larr; Volver a mensajes</button><article class="message-card message-detail-card"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${messageLabel(m.message_type)}</span>${promotionContent(m,true)}<time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time></div></article>`;
+  $('#client-message-selection').classList.add('hidden');
+  $('#message-list').innerHTML=`<button type="button" class="link-button" data-message-back>&larr; Volver a mensajes</button><article class="message-card message-detail-card"><span class="message-icon">${icon(messageIcon(m.message_type))}</span><div class="message-copy"><span class="message-tag">${m.sender_role==='client'?'Para el lubricentro':messageLabel(m.message_type)}</span>${promotionContent(m,true)}<time>${icon('circle-info')} ${fmtDateTime(m.created_at)}</time><div class="message-read-status">${clientMessageStatus(m)}</div></div></article><div class="message-detail-actions">${m.sender_role==='admin'?`<button class="btn" type="button" data-client-reply="${esc(m.id)}">${icon('comments')} Responder</button>`:''}<button class="btn danger" type="button" data-client-delete="${esc(m.id)}">${icon('trash-can')} Eliminar</button></div>`;
   UI.decorateIcons(document);
 }
 function updateUnreadState(){
-  const unread=state.messages.filter(item=>!item.is_read).length;
+  const unread=state.me?.unread_messages||0;
   $('#message-badge').textContent=unread;
-  if(state.me)state.me.unread_messages=unread;
   void syncSystemUnread(unread);
+}
+async function refreshUnreadState(){
+  state.me=await api('/api/client/me');
+  updateUnreadState();
 }
 async function openMessage(id){
   const m=state.messages.find(item=>String(item.id)===String(id));
-  if(!m)return;
-  if(!m.is_read){
+  if(!m||m.reading)return;
+  if(m.sender_role==='admin'&&!m.is_read){
+    m.reading=true;
     try{
-      await api(`/api/client/messages/${encodeURIComponent(m.id)}/read`,{method:'POST'});
-      m.is_read=true;
+      const result=await api(`/api/client/messages/${encodeURIComponent(m.id)}/read`,{method:'POST'});
+      m.is_read=true;m.read_at=result.read_at;
+      if(state.me)state.me.unread_messages=Math.max(0,state.me.unread_messages-1);
       updateUnreadState();
-    }catch{}
+    }catch(x){UI.notify(x.message,'error',{title:'No se pudo registrar la lectura'})}
+    finally{delete m.reading}
   }
   renderMessageDetail(m);
 }
-async function deleteMessage(id){
-  const m=state.messages.find(item=>String(item.id)===String(id));
-  if(!m)return;
-  const label=m.message_type==='promotion'?'promoción':m.message_type==='reminder'?'recordatorio':'mensaje';
-  const ok=await UI.confirmAction({title:`Eliminar ${label}`,message:`Esta tarjeta dejará de aparecer en tu bandeja de VERA. El registro administrativo se conservará.`,confirmText:'Eliminar',danger:true});
-  if(!ok)return;
-  const busy=UI.notify(`Eliminando ${label}…`,'loading');
+async function deleteClientMessages(ids){
+  if(!ids.length||state.messageDeleting)return;
+  state.messageDeleting=true;
+  const button=$('#delete-client-messages');
   try{
-    await api(`/api/client/messages/${encodeURIComponent(m.id)}`,{method:'DELETE'});
-    state.messages=state.messages.filter(item=>String(item.id)!==String(m.id));
-    updateUnreadState();
+    const ok=await UI.confirmAction({title:'Eliminar mensajes',message:`Se eliminarán ${ids.length} mensaje(s) de tu bandeja. El lubricentro conservará su copia.`,confirmText:'Eliminar',danger:true});
+    if(!ok)return;
+    UI.setBusy(button,true,'Eliminando…');
+    const result=await api('/api/client/messages',{method:'DELETE',body:JSON.stringify({ids})});
+    state.messages=state.messages.filter(item=>!ids.includes(item.id));
     renderMessageList();
-    busy.close();
-    UI.notify(`${label.charAt(0).toUpperCase()+label.slice(1)} eliminado de tu bandeja.`,'success');
-  }catch(e){busy.close();UI.notify(e.message,'error',{title:'No se pudo eliminar'})}
+    UI.notify(`${result.deleted} mensaje(s) eliminado(s) de tu bandeja.`,'success');
+    try{await refreshUnreadState()}catch{UI.notify('Se eliminaron los mensajes. Pulsá Actualizar para renovar el contador.','warning')}
+  }catch(e){UI.notify(e.message,'error',{title:'No se pudo eliminar'})}
+  finally{state.messageDeleting=false;UI.setBusy(button,false);updateClientMessageSelection()}
 }
+async function deleteMessage(id){return deleteClientMessages([id])}
 function cancelMessagePress(){
   if(messagePressTimer){clearTimeout(messagePressTimer);messagePressTimer=null}
   messagePressStart=null;
@@ -201,11 +232,35 @@ function cancelMessagePress(){
 async function loadMessages(){
   const loading=UI.notify('Actualizando mensajes...','loading',{title:'Mensajes VERA'});
   try{
-    state.messages=await api('/api/client/messages');
+    const [messages,me]=await Promise.all([api('/api/client/messages'),api('/api/client/me')]);
+    state.messages=messages;state.me=me;
     updateUnreadState();
     renderMessageList();
   }finally{loading.close()}
 }
+
+$('#message-list').addEventListener('change',updateClientMessageSelection);
+$('#delete-client-messages').addEventListener('click',()=>deleteClientMessages(selectedClientMessageIds()));
+$('#refresh-client-messages').addEventListener('click',async e=>{
+  const button=e.currentTarget;UI.setBusy(button,true,'Actualizando…');
+  try{await loadMessages()}catch(x){UI.notify(x.message,'error')}
+  finally{UI.setBusy(button,false)}
+});
+$('#client-message-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(state.messageSending)return;
+  const form=e.currentTarget,button=$('#send-client-message'),error=$('#client-message-error');
+  error.textContent='';
+  const payload={title:form.elements.title.value.trim(),body:form.elements.body.value.trim()};
+  if(!payload.title||!payload.body){error.textContent='Completá el asunto y el mensaje.';return}
+  state.messageSending=true;UI.setBusy(button,true,'Enviando…');
+  try{
+    await api('/api/client/messages',{method:'POST',body:JSON.stringify(payload)});
+    form.reset();UI.notify('Mensaje enviado al lubricentro.','success');
+    try{await loadMessages()}catch{UI.notify('El mensaje se envió. Pulsá Actualizar para cargar el historial.','warning')}
+  }catch(x){error.textContent=x.message;UI.notify(x.message,'error',{title:'No se pudo enviar'})}
+  finally{state.messageSending=false;UI.setBusy(button,false)}
+});
 
 async function enablePush(){
   const b=$('#enable-push');UI.setBusy(b,true,'Activando...');
@@ -261,6 +316,14 @@ document.addEventListener('click',async e=>{
   if(v){try{await selectVehicle(v.dataset.vehicleId)}catch(x){UI.notify(x.message,'error')}return}
   const s=e.target.closest('[data-service-index]');
   if(s){renderServiceDetail(state.services[Number(s.dataset.serviceIndex)]);showView('detail');return}
+  const reply=e.target.closest('[data-client-reply]');
+  if(reply){
+    const message=state.messages.find(item=>item.id===reply.dataset.clientReply);
+    if(message){const form=$('#client-message-form');if(!form.elements.title.value.trim())form.elements.title.value=message.title;form.scrollIntoView({behavior:'smooth',block:'start'});form.elements.body.focus({preventScroll:true})}
+    return;
+  }
+  const remove=e.target.closest('[data-client-delete]');
+  if(remove){await deleteMessage(remove.dataset.clientDelete);return}
   const m=e.target.closest('[data-message-id]');
   if(m){if(Date.now()<suppressMessageClickUntil){e.preventDefault();return}await openMessage(m.dataset.messageId);return}
   const mb=e.target.closest('[data-message-back]');

@@ -1,6 +1,7 @@
-const CACHE = 'vera-shell-v6';
+const CACHE = 'vera-shell-v7';
 const SHELL = [
   '/css/global.css',
+  '/css/messages.css',
   '/images/vera-lubricentro.webp',
   '/js/fa-solid-icons.js',
   '/js/vera-ui.js',
