@@ -67,19 +67,22 @@ def require_admin(request: Request) -> AdminContext:
 def require_client(request: Request) -> ClientContext:
     if not settings.auth_enabled:
         raw_client_id = request.headers.get(DEV_CLIENT_HEADER, "").strip()
-        if not raw_client_id:
-            raise HTTPException(status_code=400, detail="Selecciona un cliente desde Administracion")
-        try:
-            client_id = UUID(raw_client_id)
-        except ValueError as exc:
-            raise HTTPException(status_code=400, detail="Cliente de desarrollo invalido") from exc
         with connection() as conn:
-            row = conn.execute(
-                "select id, full_name, phone from vera.clients where id=%s",
-                (client_id,),
-            ).fetchone()
+            if raw_client_id:
+                try:
+                    client_id = UUID(raw_client_id)
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail="Cliente de desarrollo invalido") from exc
+                row = conn.execute(
+                    "select id, full_name, phone from vera.clients where id=%s",
+                    (client_id,),
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    "select id, full_name, phone from vera.clients order by created_at limit 1"
+                ).fetchone()
         if not row:
-            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+            raise HTTPException(status_code=404, detail="Todavia no hay clientes registrados")
         return ClientContext(
             id=row["id"],
             full_name=row["full_name"],
