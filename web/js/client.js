@@ -18,11 +18,29 @@ function fmtDateTime(v){if(!v)return'—';const x=new Date(v);return Number.isNa
 const km=v=>v===null||v===undefined?'—':`${Number(v).toLocaleString('es-AR')} km`;
 const vehicleName=v=>[v.brand,v.model].filter(Boolean).join(' ')||v.model||'Vehículo';
 
+function pushCard(){return $('#enable-push')?.closest('.client-utility-card')}
+function setPushCardHidden(hidden){const card=pushCard();if(card)card.classList.toggle('hidden',hidden)}
+async function syncPushCard(){
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)){setPushCardHidden(false);return}
+  if(Notification.permission!=='granted'){setPushCardHidden(false);return}
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(!sub){setPushCardHidden(false);return}
+    setPushCardHidden(true);
+    const j=sub.toJSON();
+    if(j.endpoint&&j.keys?.p256dh&&j.keys?.auth){
+      try{await api('/api/client/push/subscription',{method:'POST',body:JSON.stringify({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth})})}catch{}
+    }
+  }catch{setPushCardHidden(false)}
+}
+
 function showMain(){
   $('#login-view').classList.remove('active');
   $('#app-view').classList.add('active');
   showView('vehicles');
   UI.decorateIcons(document);
+  syncPushCard();
 }
 function showLogin(){
   $('#app-view').classList.remove('active');
@@ -128,9 +146,10 @@ async function enablePush(){
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(c.public_key)});
     const j=sub.toJSON();
     await api('/api/client/push/subscription',{method:'POST',body:JSON.stringify({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth})});
-    b.innerHTML=`${icon('circle-check')} Activadas`;b.disabled=true;UI.notify('Notificaciones VERA activadas.','success');
+    setPushCardHidden(true);
+    UI.notify('Notificaciones VERA activadas.','success');
   }catch(e){UI.notify(e.message,'error',{title:'No se pudieron activar las notificaciones'})}
-  finally{if(!b.disabled)UI.setBusy(b,false)}
+  finally{UI.setBusy(b,false)}
 }
 function urlBase64ToUint8Array(s){const p='='.repeat((4-s.length%4)%4),b=(s+p).replace(/-/g,'+').replace(/_/g,'/'),r=atob(b);return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))}
 
