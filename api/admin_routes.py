@@ -27,6 +27,12 @@ SERVICE_COLUMNS = [
     "tire_control", "tire_rotation", "battery", "observations",
 ]
 
+PROMOTION_SERVICE_FIELDS = {
+    "oil", "oil_type", "oil_filter", "fuel_filter", "air_filter", "cabin_filter",
+    "spark_plugs", "gearbox_oil", "differential_oil", "grease", "hydraulic_fluid",
+    "coolant", "brake_fluid", "tire_control", "tire_rotation", "battery",
+}
+
 
 def ensure_bootstrap_admin() -> None:
     if not settings.database_url:
@@ -412,10 +418,14 @@ def _promotion_clients(payload: PromotionInput) -> list[UUID]:
     value = f"%{payload.criterion_value.strip()}%"
     with connection() as conn:
         if payload.criterion_source == "vehicle" and payload.criterion_field == "model":
-            rows = conn.execute("select distinct client_id from vera.vehicles where model ilike %s", (value,)).fetchall()
-        elif payload.criterion_source == "service" and payload.criterion_field == "oil":
             rows = conn.execute(
-                "select distinct v.client_id from vera.services s join vera.vehicles v on v.id=s.vehicle_id where s.oil ilike %s",
+                "select distinct client_id from vera.vehicles where model ilike %s",
+                (value,),
+            ).fetchall()
+        elif payload.criterion_source == "service" and payload.criterion_field in PROMOTION_SERVICE_FIELDS:
+            column = payload.criterion_field
+            rows = conn.execute(
+                f"select distinct v.client_id from vera.services s join vera.vehicles v on v.id=s.vehicle_id where s.{column} ilike %s",
                 (value,),
             ).fetchall()
         else:

@@ -129,14 +129,32 @@
       </section>
 
       <section class="admin-view" data-admin-view="promotions">
-        <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Publicar <span>promoción</span></h1><p class="admin-subtitle">Definí el criterio y calculá la audiencia utilizando los registros reales de VERA.</p></div></div>
+        <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Publicar <span>promoción</span></h1><p class="admin-subtitle">Definí el producto o rubro libremente y segmentá solo con información real registrada en VERA.</p></div></div>
         <div class="promo-grid">
           <form class="glass-card admin-panel form-panel" id="promotion-form">
             <div class="panel-heading"><div><p class="panel-kicker">Segmentación</p><h2>Nueva promoción</h2></div></div>
-            <label>Criterio<select class="text-input" name="criterion"><option value="service:oil">Aceite registrado</option><option value="vehicle:model">Modelo del vehículo</option></select></label>
-            <label>Valor<input class="text-input" name="criterion_value" placeholder="Ej. 20W50 o Corsa" required></label>
-            <label>Título<input class="text-input" name="title" required></label>
-            <label>Detalle<textarea class="text-input textarea" name="detail" required></textarea></label>
+            <label>Criterio<select class="text-input" name="criterion">
+              <option value="vehicle:model">Modelo del vehículo</option>
+              <option value="service:oil">Aceite</option>
+              <option value="service:oil_type">Tipo de aceite</option>
+              <option value="service:oil_filter">Filtro de aceite</option>
+              <option value="service:fuel_filter">Filtro de combustible</option>
+              <option value="service:air_filter">Filtro de aire</option>
+              <option value="service:cabin_filter">Filtro de cabina</option>
+              <option value="service:spark_plugs">Bujías</option>
+              <option value="service:gearbox_oil">Aceite de caja</option>
+              <option value="service:differential_oil">Aceite diferencial</option>
+              <option value="service:grease">Grasa / engrase</option>
+              <option value="service:hydraulic_fluid">Líquido hidráulico</option>
+              <option value="service:coolant">Refrigerante</option>
+              <option value="service:brake_fluid">Líquido de freno</option>
+              <option value="service:tire_control">Control de neumáticos</option>
+              <option value="service:tire_rotation">Rotación de neumáticos</option>
+              <option value="service:battery">Batería</option>
+            </select></label>
+            <label>Valor del criterio<input class="text-input" name="criterion_value" placeholder="Ej. 20W50, Corsa, Mann, refrigerante rojo..." required></label>
+            <label>Producto / rubro / título<input class="text-input" name="title" placeholder="Ej. Pastillas de freno con 15% OFF" required></label>
+            <label>Detalle<textarea class="text-input textarea" name="detail" placeholder="Escribí libremente el producto, servicio o promoción." required></textarea></label>
             <div class="form-actions form-actions-end"><button class="btn" id="preview-promotion" type="button">Calcular audiencia</button><button class="btn primary" type="submit">Publicar promoción</button></div><p class="error-text" id="promotion-error"></p>
           </form>
           <section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section>
