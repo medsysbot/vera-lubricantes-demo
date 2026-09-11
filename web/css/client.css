@@ -40,14 +40,13 @@
 .client-utility-card strong{display:block;font-size:.95rem}
 .client-utility-card p{margin:5px 0 0;font-size:.85rem;line-height:1.5}
 .client-utility-card .btn{min-width:96px}
-.vehicle-overview{overflow:hidden;border:1px solid rgba(137,159,180,.26);border-radius:18px;background:var(--glass-background);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:var(--shadow)}
-.vehicle-overview-top{min-height:132px;padding:22px 20px;display:grid;grid-template-columns:minmax(0,1fr) 64px;align-items:center;gap:16px}
-.vehicle-emblem{grid-column:2;grid-row:1;display:grid;place-items:center;width:64px;height:64px;border:1px solid rgba(217,162,76,.35);border-radius:18px;color:var(--gold2);background:rgba(217,162,76,.05);font-size:1.8rem}
+.vehicle-overview{overflow:hidden;border:1px solid rgba(137,159,180,.26);border-radius:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:var(--shadow)}
+.vehicle-overview-top{min-height:132px;padding:22px 20px;display:grid;grid-template-columns:minmax(0,1fr);align-items:center}
 .vehicle-identity{grid-column:1;grid-row:1;min-width:0}
 .vehicle-identity .eyebrow{margin-bottom:8px}
 .vehicle-identity h2{margin:0;font-size:2.2rem;line-height:1.1;overflow-wrap:anywhere}
 .vehicle-identity p{margin:8px 0 0;color:var(--muted);font-size:.95rem;line-height:1.4;overflow-wrap:anywhere}
-.vehicle-meta-premium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(137,159,180,.2);background:rgba(2,8,18,.16)}
+.vehicle-meta-premium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(137,159,180,.2);background:rgba(0,0,0,.16)}
 .vehicle-meta-premium div{padding:16px 8px;text-align:center;min-width:0;border-right:1px solid rgba(137,159,180,.18)}
 .vehicle-meta-premium div:last-child{border-right:0}
 .vehicle-meta-premium .meta-icon{display:block;margin-bottom:8px;color:var(--gold2);font-size:1.1rem}
@@ -175,8 +174,7 @@
   .client-header{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
   .client-utility-card{grid-template-columns:44px minmax(0,1fr)}
   .client-utility-card .btn{grid-column:1/-1;width:100%}
-  .vehicle-overview-top{padding:20px 16px;grid-template-columns:minmax(0,1fr) 56px;gap:12px}
-  .vehicle-emblem{width:56px;height:56px;font-size:1.5rem}
+  .vehicle-overview-top{padding:20px 16px;grid-template-columns:minmax(0,1fr)}
   .vehicle-identity h2{font-size:2rem}
   .vehicle-meta-premium small{font-size:.72rem}
   .detail-row{grid-template-columns:30px minmax(0,1fr) 20px;gap:8px}
