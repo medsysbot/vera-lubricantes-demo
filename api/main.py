@@ -37,6 +37,7 @@ app.include_router(client_router)
 app.include_router(access_router)
 app.mount("/css", StaticFiles(directory=WEB_DIR / "css"), name="css")
 app.mount("/js", StaticFiles(directory=WEB_DIR / "js"), name="js")
+app.mount("/images", StaticFiles(directory=WEB_DIR / "images"), name="images")
 
 
 @app.middleware("http")
