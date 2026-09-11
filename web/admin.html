@@ -7,7 +7,7 @@
   <title>VERA | Administración</title>
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/admin-refresh.css?v=20260911-admin-clean">
+  <link rel="stylesheet" href="/css/admin-refresh.css?v=20260911-workshop">
 </head>
 <body class="admin-body">
   <section class="admin-login" id="admin-login">
@@ -48,11 +48,6 @@
 
     <main class="admin-main">
       <header class="admin-topbar">
-        <div class="admin-topbar-copy">
-          <p class="eyebrow">Gestión centralizada</p>
-          <h1 id="admin-title">Panel <span>administrativo</span></h1>
-          <p class="admin-subtitle">Simple, claro y enfocado en las tareas del lubricentro.</p>
-        </div>
         <div class="admin-profile" aria-label="Perfil administrativo">
           <span class="profile-avatar">V</span>
           <span><strong>Lubricentro VERA</strong><small>Administrador</small></span>
@@ -60,25 +55,21 @@
       </header>
 
       <section class="admin-view active" data-admin-view="dashboard">
-        <div class="view-heading"><div><p class="eyebrow">VERA</p><h1>Inicio</h1><p class="admin-subtitle">Panel administrativo simplificado.</p></div></div>
-        <section class="dashboard-search-shell">
-          <span class="dashboard-search-icon" data-fa="magnifying-glass"></span>
-          <div class="dashboard-search-copy">
-            <strong>Buscá un cliente, patente o teléfono</strong>
-            <small>Encontrá rápidamente la información que necesitás.</small>
-            <input class="text-input" id="dashboard-client-search" placeholder="Ej. Juan Pérez, AB 123 CD, 11 2345-6789">
-          </div>
-          <button class="btn primary" id="dashboard-search-client" type="button">Buscar</button>
-        </section>
+        <div class="view-heading"><div><h1 id="admin-title">Inicio</h1><p class="admin-subtitle">Panel administrativo</p></div></div>
         <div class="kpi-grid" id="dashboard-kpis"></div>
         <div class="quick-actions admin-action-strip dashboard-actions">
-          <button class="admin-action-card" data-dashboard-action="search-client"><span class="action-icon"></span><span class="action-copy"><strong>Buscar cliente</strong><small>Encontrá un cliente existente</small></span><span class="action-arrow"></span></button>
-          <button class="admin-action-card" data-dashboard-action="new-client"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo cliente</strong><small>Registrá cliente y primer vehículo</small></span><span class="action-arrow"></span></button>
-          <button class="admin-action-card" data-dashboard-action="new-service"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo servicio</strong><small>Buscá vehículo y registrá el servicio</small></span><span class="action-arrow"></span></button>
-          <button class="admin-action-card" data-dashboard-action="new-promotion"><span class="action-icon"></span><span class="action-copy"><strong>Nueva promoción</strong><small>Creá y segmentá una promoción</small></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-client"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo cliente</strong></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-service"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo servicio</strong></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-promotion"><span class="action-icon"></span><span class="action-copy"><strong>Nueva promoción</strong></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-admin-go="messages"><span class="action-icon" data-fa="comments" aria-hidden="true"></span><span class="action-copy"><strong>Ver mensajes</strong></span></button>
         </div>
-        <section class="dashboard-empty-state">
-          <div><span class="empty-icon" data-fa="car"></span><h2>Comenzá buscando un cliente</h2><p>O registrá un nuevo servicio para mantener todo al día.</p></div>
+        <section class="dashboard-search-shell" role="search" aria-labelledby="dashboard-search-label">
+          <span class="dashboard-search-icon" data-fa="magnifying-glass" aria-hidden="true"></span>
+          <label id="dashboard-search-label" for="dashboard-client-search">Buscar</label>
+          <div class="dashboard-search-controls">
+            <input class="text-input" id="dashboard-client-search" type="search" placeholder="Nombre, patente o teléfono" autocomplete="off">
+            <button class="btn primary" id="dashboard-search-client" type="button">Buscar</button>
+          </div>
         </section>
       </section>
 
@@ -201,6 +192,6 @@
 
   <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button">Copiar enlace</button></dialog>
   <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit">Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
-  <script src="/js/admin.js?v=20260911-admin-clean" defer></script>
+  <script src="/js/admin.js?v=20260911-workshop" defer></script>
 </body>
 </html>

@@ -101,7 +101,7 @@
       $$('.admin-nav [data-admin-go]').forEach(b => {
         if (!b.querySelector('.nav-icon')) b.insertAdjacentHTML('afterbegin', `<span class="nav-icon">${icon(nav[b.dataset.adminGo])}</span>`);
       });
-      const dashboardIcons = { 'search-client':'magnifying-glass', 'new-client':'user-plus', 'new-service':'wrench', 'new-promotion':'tags' };
+      const dashboardIcons = { 'new-client':'user-plus', 'new-service':'wrench', 'new-promotion':'tags' };
       $$('[data-dashboard-action]').forEach(b => {
         const holder = b.querySelector('.action-icon');
         const arrow = b.querySelector('.action-arrow');
@@ -212,7 +212,6 @@
     document.addEventListener('click', async e => {
       const action = e.target.closest('[data-dashboard-action]')?.dataset.dashboardAction;
       if (!action) return;
-      if (action === 'search-client') { await go('clients'); $('#client-search').focus(); }
       if (action === 'new-client') { await go('clients'); showNewClient(); }
       if (action === 'new-service') await go('services');
       if (action === 'new-promotion') { await go('promotions'); showPromotionCreate(); }
