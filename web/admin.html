@@ -7,6 +7,7 @@
   <title>VERA | Administración</title>
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/admin-refresh.css?v=20260911-admin-clean">
 </head>
 <body class="admin-body">
   <section class="admin-login" id="admin-login">
@@ -28,10 +29,10 @@
     <aside class="admin-sidebar">
       <div class="sidebar-brand">
         <div class="brand-lockup"><span class="brand-mark">V</span><span><strong>VERA</strong><small>LUBRICANTES</small></span></div>
-        <span class="sidebar-caption">Gestión integral</span>
+        <span class="sidebar-caption">Panel administrativo</span>
       </div>
       <nav class="admin-nav" aria-label="Navegación administrativa">
-        <button class="active" data-admin-go="dashboard">Resumen</button>
+        <button class="active" data-admin-go="dashboard">Inicio</button>
         <button data-admin-go="clients">Clientes</button>
         <button data-admin-go="vehicles">Vehículos</button>
         <button data-admin-go="services">Servicios</button>
@@ -50,7 +51,7 @@
         <div class="admin-topbar-copy">
           <p class="eyebrow">Gestión centralizada</p>
           <h1 id="admin-title">Panel <span>administrativo</span></h1>
-          <p class="admin-subtitle">Gestioná clientes, vehículos, servicios y promociones desde un solo lugar.</p>
+          <p class="admin-subtitle">Simple, claro y enfocado en las tareas del lubricentro.</p>
         </div>
         <div class="admin-profile" aria-label="Perfil administrativo">
           <span class="profile-avatar">V</span>
@@ -59,23 +60,47 @@
       </header>
 
       <section class="admin-view active" data-admin-view="dashboard">
-        <div class="quick-actions admin-action-strip">
-          <button class="admin-action-card" data-admin-go="clients"><span class="action-icon">＋</span><span class="action-copy"><strong>Nuevo cliente</strong><small>Registrar cliente y vehículo</small></span><span class="action-arrow">›</span></button>
-          <button class="admin-action-card" data-admin-go="services"><span class="action-icon">◇</span><span class="action-copy"><strong>Nuevo servicio</strong><small>Buscar por patente o cliente</small></span><span class="action-arrow">›</span></button>
-          <button class="admin-action-card" data-admin-go="promotions"><span class="action-icon">⌁</span><span class="action-copy"><strong>Cargar promoción</strong><small>Segmentar con registros reales</small></span><span class="action-arrow">›</span></button>
-        </div>
+        <div class="view-heading"><div><p class="eyebrow">VERA</p><h1>Inicio</h1><p class="admin-subtitle">Panel administrativo simplificado.</p></div></div>
+        <section class="dashboard-search-shell">
+          <span class="dashboard-search-icon" data-fa="magnifying-glass"></span>
+          <div class="dashboard-search-copy">
+            <strong>Buscá un cliente, patente o teléfono</strong>
+            <small>Encontrá rápidamente la información que necesitás.</small>
+            <input class="text-input" id="dashboard-client-search" placeholder="Ej. Juan Pérez, AB 123 CD, 11 2345-6789">
+          </div>
+          <button class="btn primary" id="dashboard-search-client" type="button">Buscar</button>
+        </section>
         <div class="kpi-grid" id="dashboard-kpis"></div>
-        <section class="glass-card admin-panel dashboard-panel">
-          <div class="panel-heading"><div><p class="panel-kicker">Movimientos del sistema</p><h2>Actividad reciente</h2></div><span class="panel-mark">VERA</span></div>
-          <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Referencia</th></tr></thead><tbody id="activity-body"></tbody></table></div>
+        <div class="quick-actions admin-action-strip dashboard-actions">
+          <button class="admin-action-card" data-dashboard-action="search-client"><span class="action-icon"></span><span class="action-copy"><strong>Buscar cliente</strong><small>Encontrá un cliente existente</small></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-client"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo cliente</strong><small>Registrá cliente y primer vehículo</small></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-service"><span class="action-icon"></span><span class="action-copy"><strong>Nuevo servicio</strong><small>Buscá vehículo y registrá el servicio</small></span><span class="action-arrow"></span></button>
+          <button class="admin-action-card" data-dashboard-action="new-promotion"><span class="action-icon"></span><span class="action-copy"><strong>Nueva promoción</strong><small>Creá y segmentá una promoción</small></span><span class="action-arrow"></span></button>
+        </div>
+        <section class="dashboard-empty-state">
+          <div><span class="empty-icon" data-fa="car"></span><h2>Comenzá buscando un cliente</h2><p>O registrá un nuevo servicio para mantener todo al día.</p></div>
         </section>
       </section>
 
       <section class="admin-view" data-admin-view="clients">
-        <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Clientes</h1><p class="admin-subtitle">Buscá, registrá y administrá clientes y sus vehículos asociados.</p></div><button class="btn primary" id="toggle-new-client" type="button">＋ Nuevo cliente</button></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="client-search" placeholder="Nombre, teléfono o patente"><button class="btn" id="search-clients" type="button">Buscar</button></div>
-        <form class="glass-card admin-panel form-panel hidden" id="new-client-form">
-          <div class="panel-heading"><div><p class="panel-kicker">Alta inicial</p><h2>Crear cliente y primer vehículo</h2></div></div>
+        <div id="clients-search-mode">
+          <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Clientes</h1><p class="admin-subtitle">Buscá por nombre, teléfono o patente. El listado completo no se muestra por defecto.</p></div><button class="btn primary" id="toggle-new-client" type="button">Nuevo cliente</button></div>
+          <div class="search-row search-command"><span class="search-icon"></span><input class="text-input" id="client-search" placeholder="Nombre, teléfono o patente"><button class="btn" id="search-clients" type="button">Buscar</button></div>
+          <div class="record-grid compact-results" id="client-results"><div class="client-empty"><div><span data-fa="magnifying-glass"></span><p>Ingresá un nombre, teléfono o patente para buscar un cliente.</p></div></div></div>
+          <div class="selection-action-bar hidden" id="client-action-bar">
+            <div class="selection-copy"><strong id="selected-client-name">Cliente seleccionado</strong><span>Elegí una acción para este cliente.</span></div>
+            <div class="selection-actions">
+              <button class="btn" data-selected-client-action="add" type="button">Agregar vehículo</button>
+              <button class="btn" data-selected-client-action="activation" type="button">QR activación</button>
+              <button class="btn" data-selected-client-action="pin_reset" type="button">Restablecer PIN</button>
+              <button class="btn" data-selected-client-action="relink" type="button">Revincular VERA</button>
+              <button class="btn danger" data-selected-client-action="delete" type="button">Eliminar cliente</button>
+            </div>
+          </div>
+        </div>
+        <form class="glass-card admin-panel form-panel admin-focus-panel hidden" id="new-client-form">
+          <button class="link-button mode-back" id="close-new-client" type="button">Volver a clientes</button>
+          <div class="panel-heading"><div><p class="panel-kicker">Alta inicial</p><h2>Nuevo cliente</h2><p class="admin-subtitle">Completá los datos actuales del cliente y su primer vehículo.</p></div></div>
           <div class="form-grid">
             <label>Nombre y apellido<input class="text-input" name="full_name" required></label>
             <label>Teléfono<input class="text-input" name="phone" required></label>
@@ -86,23 +111,29 @@
             <label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label>
             <label>Kilometraje registrado<input class="text-input" name="current_mileage" type="number" min="0"></label>
           </div>
-          <div class="form-actions form-actions-end"><button class="btn primary" type="submit">Guardar cliente</button></div>
+          <div class="new-client-actions"><button class="btn" id="cancel-new-client" type="button">Cancelar</button><button class="btn primary" type="submit">Guardar cliente</button></div>
           <p class="error-text" id="new-client-error"></p>
         </form>
-        <div class="record-grid" id="client-results"></div>
       </section>
 
       <section class="admin-view" data-admin-view="vehicles">
-        <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Vehículos</h1><p class="admin-subtitle">Localizá rápidamente un vehículo por patente, modelo o cliente.</p></div></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="vehicle-search" placeholder="Patente, modelo o cliente"><button class="btn" id="search-vehicles" type="button">Buscar</button></div>
-        <div class="record-grid" id="vehicle-results"></div>
+        <div class="view-heading"><div><p class="eyebrow">Gestión</p><h1>Vehículos</h1><p class="admin-subtitle">Listado simple con búsqueda y acciones concentradas en el vehículo seleccionado.</p></div></div>
+        <div class="search-row search-command"><span class="search-icon"></span><input class="text-input" id="vehicle-search" placeholder="Patente, modelo o cliente"><button class="btn" id="search-vehicles" type="button">Buscar</button></div>
+        <div class="vehicle-list" id="vehicle-results"></div>
+        <div class="selection-action-bar hidden" id="vehicle-action-bar">
+          <div class="selection-copy"><strong id="selected-vehicle-name">Vehículo seleccionado</strong><span>Las acciones se muestran una sola vez.</span></div>
+          <div class="selection-actions"><button class="btn primary" id="selected-vehicle-service" type="button">Nuevo servicio / historial</button><button class="btn danger" id="selected-vehicle-delete" type="button">Eliminar vehículo</button></div>
+        </div>
       </section>
 
       <section class="admin-view" data-admin-view="services">
-        <div class="view-heading"><div><p class="eyebrow">Taller</p><h1>Nuevo servicio <span>precargado</span></h1><p class="admin-subtitle">Seleccioná el vehículo, verificá la información previa y completá únicamente lo nuevo.</p></div></div>
-        <div class="search-row search-command"><span class="search-icon">⌕</span><input class="text-input" id="service-search" placeholder="Patente o cliente"><button class="btn" id="search-service-vehicle" type="button">Buscar vehículo</button></div>
-        <div class="record-grid" id="service-search-results"></div>
+        <div class="service-search-mode" id="service-search-mode">
+          <div class="view-heading"><div><p class="eyebrow">Taller</p><h1>Servicios</h1><p class="admin-subtitle">Buscá el vehículo y después completá únicamente el servicio.</p></div></div>
+          <div class="search-row search-command"><span class="search-icon"></span><input class="text-input" id="service-search" placeholder="Patente o cliente"><button class="btn" id="search-service-vehicle" type="button">Buscar vehículo</button></div>
+          <div class="record-grid compact-results" id="service-search-results"><div class="service-empty"><div><span data-fa="magnifying-glass"></span><p>Buscá una patente o cliente para comenzar.</p></div></div></div>
+        </div>
         <section class="glass-card admin-panel service-panel hidden" id="service-editor">
+          <button class="link-button mode-back" id="back-service-search" type="button">Volver a buscar</button>
           <div class="preloaded-strip" id="service-preloaded"></div>
           <form id="service-form">
             <input type="hidden" id="service-vehicle-id"><input type="hidden" id="service-id">
@@ -129,24 +160,33 @@
       </section>
 
       <section class="admin-view" data-admin-view="promotions">
-        <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Publicar <span>promoción</span></h1><p class="admin-subtitle">Definí libremente el ítem o condición y elegí si VERA busca la audiencia en el historial o si la promoción es para todos los clientes.</p></div></div>
-        <div class="promo-grid">
-          <form class="glass-card admin-panel form-panel" id="promotion-form">
-            <div class="panel-heading"><div><p class="panel-kicker">Segmentación</p><h2>Nueva promoción</h2></div></div>
-            <label><span>Destino</span><div class="form-actions"><button class="btn primary" type="button" data-promotion-scope="history">Automático según historial</button><button class="btn" type="button" data-promotion-scope="all">Todos los clientes</button></div><input type="hidden" name="audience_scope" value="history"></label>
-            <label><span>Ítem o condición</span><input class="text-input" name="criterion_value" placeholder="Ej. 20W50, batería, Visa 6 cuotas sin interés, pago con cheque..." required></label>
-            <label>Producto / rubro / título<input class="text-input" name="title" placeholder="Ej. Pastillas de freno con 15% OFF" required></label>
-            <label>Detalle<textarea class="text-input textarea" name="detail" placeholder="Escribí libremente el producto, servicio o promoción." required></textarea></label>
-            <div class="form-actions form-actions-end"><button class="btn" id="preview-promotion" type="button">Calcular audiencia</button><button class="btn primary" type="submit">Publicar promoción</button></div><p class="error-text" id="promotion-error"></p>
-          </form>
-          <section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section>
+        <div id="promotion-list-mode">
+          <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Promociones</h1><p class="admin-subtitle">Listado limpio con selección y eliminación múltiple.</p></div><button class="btn primary" id="new-promotion" type="button">Nueva promoción</button></div>
+          <section class="glass-card admin-panel dashboard-panel">
+            <div class="promotion-selection-bar"><span id="promotion-selection-count">0 promociones seleccionadas</span><button class="btn danger" id="delete-promotions" type="button" disabled>Eliminar promociones</button></div>
+            <div id="published-promotions"></div>
+          </section>
         </div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="panel-heading"><div><p class="panel-kicker">Historial</p><h2>Promociones publicadas</h2></div><button class="btn danger" id="delete-promotions" type="button" disabled>Eliminar promociones</button></div><div id="published-promotions"></div></section>
+        <div class="hidden" id="promotion-create-mode">
+          <button class="link-button mode-back" id="cancel-promotion-create" type="button">Volver a promociones</button>
+          <div class="view-heading"><div><p class="eyebrow">Comunicación</p><h1>Nueva <span>promoción</span></h1><p class="admin-subtitle">Mantenemos exactamente los campos y la segmentación actuales.</p></div></div>
+          <div class="promo-grid">
+            <form class="glass-card admin-panel form-panel" id="promotion-form">
+              <div class="panel-heading"><div><p class="panel-kicker">Segmentación</p><h2>Nueva promoción</h2></div></div>
+              <label><span>Destino</span><div class="form-actions"><button class="btn primary" type="button" data-promotion-scope="history">Automático según historial</button><button class="btn" type="button" data-promotion-scope="all">Todos los clientes</button></div><input type="hidden" name="audience_scope" value="history"></label>
+              <label><span>Ítem o condición</span><input class="text-input" name="criterion_value" placeholder="Ej. 20W50, batería, Visa 6 cuotas sin interés, pago con cheque..." required></label>
+              <label>Producto / rubro / título<input class="text-input" name="title" placeholder="Ej. Pastillas de freno con 15% OFF" required></label>
+              <label>Detalle<textarea class="text-input textarea" name="detail" placeholder="Escribí libremente el producto, servicio o promoción." required></textarea></label>
+              <div class="form-actions form-actions-end"><button class="btn" id="preview-promotion" type="button">Calcular audiencia</button><button class="btn primary" type="submit">Publicar promoción</button></div><p class="error-text" id="promotion-error"></p>
+            </form>
+            <section class="glass-card admin-panel audience-panel"><div class="panel-heading"><div><p class="panel-kicker">Destino</p><h2>Audiencia automática</h2></div></div><div id="promotion-preview"><p class="muted">Calculá la audiencia antes de publicar.</p></div></section>
+          </div>
+        </div>
       </section>
 
       <section class="admin-view" data-admin-view="messages">
-        <div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1><p class="admin-subtitle">Seguimiento de comunicaciones internas enviadas por VERA.</p></div></div>
-        <section class="glass-card admin-panel dashboard-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Título</th><th>Estado</th></tr></thead><tbody id="admin-messages"></tbody></table></div></section>
+        <div class="view-heading"><div><p class="eyebrow">Bandeja</p><h1>Mensajes</h1><p class="admin-subtitle">Seguimiento limpio de las comunicaciones que VERA ya registra.</p></div></div>
+        <div class="admin-message-list" id="admin-messages"></div>
       </section>
 
       <section class="admin-view" data-admin-view="reminders">
@@ -161,6 +201,6 @@
 
   <dialog id="qr-dialog" class="qr-dialog"><button class="dialog-close" id="close-qr" type="button">×</button><p class="eyebrow">Acceso VERA</p><h2 id="qr-title">QR temporal</h2><img id="qr-image" alt="QR temporal VERA"><p class="muted" id="qr-expiry"></p><button class="btn" id="copy-qr-link" type="button">Copiar enlace</button></dialog>
   <dialog id="vehicle-dialog" class="qr-dialog"><button class="dialog-close" id="close-vehicle-dialog" type="button">×</button><p class="eyebrow">Cliente</p><h2>Agregar vehículo</h2><form id="add-vehicle-form"><input type="hidden" id="add-vehicle-client-id"><label>Patente<input class="text-input" name="plate" required></label><label>Marca<input class="text-input" name="brand"></label><label>Modelo<input class="text-input" name="model" required></label><label>Descripción<input class="text-input" name="description"></label><label>Año<input class="text-input" name="year" type="number" min="1900" max="2200"></label><label>Kilometraje<input class="text-input" name="current_mileage" type="number" min="0"></label><button class="btn primary" type="submit">Guardar vehículo</button><p class="error-text" id="add-vehicle-error"></p></form></dialog>
-  <script src="/js/admin.js?v=20260911-promotion-delete" defer></script>
+  <script src="/js/admin.js?v=20260911-admin-clean" defer></script>
 </body>
 </html>
