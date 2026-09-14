@@ -71,14 +71,13 @@ def update_client_profile(
             if not client:
                 raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-            if vehicle_ids:
-                owned_rows = conn.execute(
-                    "select id from vera.vehicles where client_id=%s and id=any(%s)",
-                    (client_id, vehicle_ids),
-                ).fetchall()
-                owned_ids = {row["id"] for row in owned_rows}
-                if owned_ids != set(vehicle_ids):
-                    raise HTTPException(status_code=400, detail="Uno de los vehículos no pertenece al cliente")
+            owned_rows = conn.execute(
+                "select id from vera.vehicles where client_id=%s",
+                (client_id,),
+            ).fetchall()
+            owned_ids = {row["id"] for row in owned_rows}
+            if not set(vehicle_ids).issubset(owned_ids):
+                raise HTTPException(status_code=400, detail="Uno de los vehículos no pertenece al cliente")
 
             conn.execute(
                 "update vera.clients set full_name=%s, phone=%s where id=%s",
