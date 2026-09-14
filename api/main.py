@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.access_routes import router as access_router
@@ -21,6 +21,7 @@ logger = logging.getLogger("vera")
 BASE_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = BASE_DIR / "web"
 NO_STORE_HEADERS = {"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache", "Expires": "0"}
+ADMIN_EDIT_SCRIPT = '<script src="/js/admin-edit.js?v=20260914-client-service-edit" defer></script>'
 
 
 @asynccontextmanager
@@ -53,6 +54,13 @@ async def same_origin_guard(request: Request, call_next):
     return await call_next(request)
 
 
+def admin_html_response() -> HTMLResponse:
+    content = (WEB_DIR / "admin.html").read_text(encoding="utf-8")
+    if ADMIN_EDIT_SCRIPT not in content:
+        content = content.replace("</body>", f"  {ADMIN_EDIT_SCRIPT}\n</body>")
+    return HTMLResponse(content=content, headers=NO_STORE_HEADERS)
+
+
 @app.get("/health", include_in_schema=False)
 def health():
     return {"status": "ok"}
@@ -71,13 +79,13 @@ def health_db():
 
 @app.get("/", include_in_schema=False)
 def root_app():
-    return FileResponse(WEB_DIR / "admin.html", headers=NO_STORE_HEADERS)
+    return admin_html_response()
 
 
 @app.get("/admin", include_in_schema=False)
 @app.get("/admin.html", include_in_schema=False)
 def admin_app():
-    return FileResponse(WEB_DIR / "admin.html", headers=NO_STORE_HEADERS)
+    return admin_html_response()
 
 
 @app.get("/cliente", include_in_schema=False)
