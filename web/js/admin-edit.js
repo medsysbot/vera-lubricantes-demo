@@ -157,7 +157,7 @@
     if (!history || history.dataset.selectionReady === '1') return;
     const oldButtons = $$('[data-cs]', history);
     if (!oldButtons.length) {
-      if (history.querySelector('h2')) {
+      if (history.querySelector('h2') && !history.querySelector('.service-entry')) {
         history.insertAdjacentHTML('beforeend', '<p class="muted">Sin servicios registrados.</p>');
         history.dataset.selectionReady = '1';
       }
@@ -269,6 +269,7 @@
     const history = $('#admin-service-history');
     if (history) {
       new MutationObserver(() => {
+        if (!history.querySelector('[data-cs]')) return;
         history.dataset.selectionReady = '';
         queueMicrotask(convertServiceHistory);
       }).observe(history, { childList: true, subtree: false });
