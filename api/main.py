@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.access_routes import router as access_router
+from api.admin_edit_routes import router as admin_edit_router
 from api.admin_routes import ensure_bootstrap_admin, router as admin_router
 from api.client_routes import router as client_router
 from api.db import database_health
@@ -33,6 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="VERA Lubricantes", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
 app.include_router(admin_router)
+app.include_router(admin_edit_router)
 app.include_router(client_router)
 app.include_router(access_router)
 app.mount("/css", StaticFiles(directory=WEB_DIR / "css"), name="css")
